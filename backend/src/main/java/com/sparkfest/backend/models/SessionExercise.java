@@ -25,5 +25,6 @@ public class SessionExercise {
     private Exercise exercise;
 
     @Column(name = "sequence_order", nullable = false)
+    @Builder.Default
     private Short sequenceOrder = 0;
 }

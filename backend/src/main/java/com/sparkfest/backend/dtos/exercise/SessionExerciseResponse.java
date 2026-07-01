@@ -1,11 +1,16 @@
 package com.sparkfest.backend.dtos.exercise;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SessionExerciseResponse {
+
     private Short sequenceOrder;
     private ExerciseResponse exercise;
 }

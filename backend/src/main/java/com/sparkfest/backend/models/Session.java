@@ -26,8 +26,13 @@ public class Session {
     @Column(name = "child_id", nullable = false)
     private Long childId;
 
+    // nullable = true so sessions can exist without a therapist assigned yet
+    @Column(name = "therapist_id")
+    private Long therapistId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
+    @Builder.Default
     private SessionStatus status = SessionStatus.PENDING;
 
     @Column(name = "started_at")
@@ -42,8 +47,6 @@ public class Session {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    // ── Relationships ──────────────────────────────────────
-
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("sequenceOrder ASC")
     @Builder.Default
@@ -53,8 +56,6 @@ public class Session {
     @Builder.Default
     private List<Attempt> attempts = new ArrayList<>();
 
-    // ── Audit ──────────────────────────────────────────────
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -62,8 +63,6 @@ public class Session {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    // ── Helpers ────────────────────────────────────────────
 
     public void start() {
         this.status = SessionStatus.IN_PROGRESS;

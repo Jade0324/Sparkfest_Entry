@@ -8,10 +8,14 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class AttemptResponse {
+
     private Long id;
     private Long sessionId;
     private Long exerciseId;
+    private String targetWord;
+    private String nativeWord;
     private Short attemptNumber;
+    private String transcript;
     private String audioUrl;
     private BigDecimal accuracyScore;
     private String aiFeedback;

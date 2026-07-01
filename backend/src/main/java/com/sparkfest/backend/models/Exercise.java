@@ -25,11 +25,17 @@ public class Exercise {
     @Column(name = "target_word", nullable = false, length = 120)
     private String targetWord;
 
+    // Tagalog equivalent shown on the bilingual learning card
+    // e.g. targetWord = "Fish", nativeWord = "Isda"
+    @Column(name = "native_word", length = 120)
+    private String nativeWord;
+
     @Column(name = "phoneme_focus", length = 60)
     private String phonemeFocus;
 
     @Column(nullable = false)
-    private Short difficulty = 1; // 1–5
+    @Builder.Default
+    private Short difficulty = 1;
 
     @Column(name = "media_url", length = 512)
     private String mediaUrl;
@@ -38,15 +44,12 @@ public class Exercise {
     private String instructions;
 
     @Column(name = "is_active", nullable = false)
+    @Builder.Default
     private Boolean isActive = true;
-
-    // ── Relationships ──────────────────────────────────────
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<SessionExercise> sessionExercises = new ArrayList<>();
-
-    // ── Audit ──────────────────────────────────────────────
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

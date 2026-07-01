@@ -32,33 +32,33 @@ public class Attempt {
     private Exercise exercise;
 
     @Column(name = "attempt_number", nullable = false)
+    @Builder.Default
     private Short attemptNumber = 1;
 
     @Column(name = "audio_url", length = 512)
     private String audioUrl;
 
-    /** 0.00–100.00 from the ASR / scoring engine */
+    @Column(name = "transcript", columnDefinition = "TEXT")
+    private String transcript;
+
     @Column(name = "accuracy_score", precision = 5, scale = 2)
     private BigDecimal accuracyScore;
 
-    /** Populated asynchronously by the AI feedback service */
     @Column(name = "ai_feedback", columnDefinition = "TEXT")
     private String aiFeedback;
 
     @Column(name = "ai_feedback_audio_url", length = 512)
     private String aiFeedbackAudioUrl;
 
-    /** null = not yet evaluated; true = passed; false = failed */
     @Column(name = "passed")
     private Boolean passed;
 
     @Column(name = "recorded_at", nullable = false)
+    @Builder.Default
     private LocalDateTime recordedAt = LocalDateTime.now();
 
     @Column(name = "evaluated_at")
     private LocalDateTime evaluatedAt;
-
-    // ── Audit ──────────────────────────────────────────────
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -68,14 +68,7 @@ public class Attempt {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // ── Helper ─────────────────────────────────────────────
-
-    /**
-     * Called by the AI feedback service once evaluation is complete.
-     */
-    public void applyFeedback(String feedback,
-            String feedbackAudioUrl,
-            boolean didPass) {
+    public void applyFeedback(String feedback, String feedbackAudioUrl, boolean didPass) {
         this.aiFeedback = feedback;
         this.aiFeedbackAudioUrl = feedbackAudioUrl;
         this.passed = didPass;
