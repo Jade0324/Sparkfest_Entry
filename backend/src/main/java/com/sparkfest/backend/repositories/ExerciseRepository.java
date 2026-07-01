@@ -1,11 +1,13 @@
 package com.sparkfest.backend.repositories;
 
+import com.sparkfest.backend.models.Exercise;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.sparkfest.backend.models.Exercise;
 
 public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
 
-    Page<Exercise> findByDifficulty(Short difficulty, Pageable pageable);
+    Page<Exercise> findByIsActiveTrue(Pageable pageable);
+
+    Page<Exercise> findByDifficultyAndIsActiveTrue(Short difficulty, Pageable pageable);
 }

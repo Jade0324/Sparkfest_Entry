@@ -27,152 +27,149 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SessionService {
 
-    private final SessionRepository sessionRepository;
-    private final ExerciseRepository exerciseRepository;
+        private final SessionRepository sessionRepository;
+        private final ExerciseRepository exerciseRepository;
 
-    @Transactional
-    public SessionDetailResponse startSession(StartSessionRequest request) {
+        @Transactional
+        public SessionDetailResponse startSession(StartSessionRequest request) {
 
-        List<Exercise> exercises = exerciseRepository.findAllById(request.getExerciseIds());
+                List<Exercise> exercises = exerciseRepository.findAllById(request.getExerciseIds());
 
-        if (exercises.size() != request.getExerciseIds().size()) {
-            throw new ResourceNotFoundException("One or more exercise IDs do not exist");
+                if (exercises.size() != request.getExerciseIds().size()) {
+                        throw new ResourceNotFoundException("One or more exercise IDs do not exist");
+                }
+
+                Map<Long, Exercise> exerciseById = exercises.stream()
+                                .collect(Collectors.toMap(Exercise::getId, e -> e));
+
+                Session session = Session.builder()
+                                .childId(request.getChildId())
+                                .build();
+
+                session.start();
+
+                List<Long> orderedIds = request.getExerciseIds();
+                for (short i = 0; i < orderedIds.size(); i++) {
+                        Exercise exercise = exerciseById.get(orderedIds.get(i));
+
+                        SessionExercise sessionExercise = SessionExercise.builder()
+                                        .session(session)
+                                        .exercise(exercise)
+                                        .sequenceOrder(i)
+                                        .build();
+
+                        session.getSessionExercises().add(sessionExercise);
+                }
+
+                Session saved = sessionRepository.save(session);
+                return toDetailResponse(saved);
         }
 
-        Map<Long, Exercise> exerciseById = exercises.stream()
-                .collect(Collectors.toMap(Exercise::getId, e -> e));
-
-        Session session = Session.builder()
-                .childId(request.getChildId())
-                .build();
-
-        session.start();
-
-        List<Long> orderedIds = request.getExerciseIds();
-        for (short i = 0; i < orderedIds.size(); i++) {
-            Exercise exercise = exerciseById.get(orderedIds.get(i));
-
-            SessionExercise sessionExercise = SessionExercise.builder()
-                    .session(session)
-                    .exercise(exercise)
-                    .sequenceOrder(i)
-                    .build();
-
-            session.getSessionExercises().add(sessionExercise);
+        @Transactional(readOnly = true)
+        public SessionDetailResponse getSession(Long sessionId) {
+                Session session = sessionRepository.findById(sessionId)
+                                .orElseThrow(() -> ResourceNotFoundException.of("Session", sessionId));
+                return toDetailResponse(session);
         }
 
-        Session saved = sessionRepository.save(session);
+        @Transactional
+        public SessionSummaryResponse completeSession(Long sessionId) {
+                Session session = sessionRepository.findById(sessionId)
+                                .orElseThrow(() -> ResourceNotFoundException.of("Session", sessionId));
 
-        return toDetailResponse(saved);
-    }
+                if (session.getStatus() == Session.SessionStatus.COMPLETED) {
+                        throw new IllegalStateException("Session is already completed");
+                }
 
-    @Transactional(readOnly = true)
-    public SessionDetailResponse getSession(Long sessionId) {
-        Session session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> ResourceNotFoundException.of("Session", sessionId));
+                BigDecimal computedScore = computeTotalScore(session);
+                session.complete(computedScore);
 
-        return toDetailResponse(session);
-    }
+                Session saved = sessionRepository.save(session);
 
-    @Transactional
-    public SessionSummaryResponse completeSession(Long sessionId) {
-        Session session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> ResourceNotFoundException.of("Session", sessionId));
-
-        if (session.getStatus() == Session.SessionStatus.COMPLETED) {
-            throw new IllegalStateException("Session is already completed");
+                return SessionSummaryResponse.builder()
+                                .id(saved.getId())
+                                .status(saved.getStatus().name())
+                                .completedAt(saved.getCompletedAt())
+                                .totalScore(saved.getTotalScore())
+                                .build();
         }
 
-        BigDecimal computedScore = computeTotalScore(session);
-        session.complete(computedScore);
+        // ── Helpers ────────────────────────────────────────────
 
-        Session saved = sessionRepository.save(session);
+        private BigDecimal computeTotalScore(Session session) {
+                List<Attempt> attempts = session.getAttempts();
 
-        return SessionSummaryResponse.builder()
-                .id(saved.getId())
-                .status(saved.getStatus().name())
-                .completedAt(saved.getCompletedAt())
-                .totalScore(saved.getTotalScore())
-                .build();
-    }
+                if (attempts.isEmpty()) {
+                        return BigDecimal.ZERO;
+                }
 
-    // ── Helpers ────────────────────────────────────────────
+                long scoredCount = attempts.stream()
+                                .filter(a -> a.getAccuracyScore() != null)
+                                .count();
 
-    private BigDecimal computeTotalScore(Session session) {
-        List<Attempt> attempts = session.getAttempts();
+                if (scoredCount == 0) {
+                        return BigDecimal.ZERO;
+                }
 
-        if (attempts.isEmpty()) {
-            return BigDecimal.ZERO;
+                BigDecimal sum = attempts.stream()
+                                .map(Attempt::getAccuracyScore)
+                                .filter(score -> score != null)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                return sum.divide(BigDecimal.valueOf(scoredCount), 2, RoundingMode.HALF_UP);
         }
 
-        BigDecimal sum = attempts.stream()
-                .map(Attempt::getAccuracyScore)
-                .filter(score -> score != null)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        private SessionDetailResponse toDetailResponse(Session session) {
+                List<SessionExerciseResponse> exerciseResponses = session.getSessionExercises().stream()
+                                .map(this::toSessionExerciseResponse)
+                                .collect(Collectors.toList());
 
-        long scoredCount = attempts.stream()
-                .filter(a -> a.getAccuracyScore() != null)
-                .count();
+                List<AttemptResponse> attemptResponses = session.getAttempts().stream()
+                                .map(this::toAttemptResponse)
+                                .collect(Collectors.toList());
 
-        if (scoredCount == 0) {
-            return BigDecimal.ZERO;
+                return SessionDetailResponse.builder()
+                                .id(session.getId())
+                                .childId(session.getChildId())
+                                .status(session.getStatus().name())
+                                .startedAt(session.getStartedAt())
+                                .completedAt(session.getCompletedAt())
+                                .totalScore(session.getTotalScore())
+                                .exercises(exerciseResponses)
+                                .attempts(attemptResponses)
+                                .build();
         }
 
-        return sum.divide(BigDecimal.valueOf(scoredCount), 2, RoundingMode.HALF_UP);
-    }
+        // ── KEY FIX: uses constructor directly instead of .builder()
+        // because @Builder + @NoArgsConstructor conflict on SessionExerciseResponse
+        private SessionExerciseResponse toSessionExerciseResponse(SessionExercise sessionExercise) {
+                ExerciseResponse exerciseResponse = ExerciseResponse.builder()
+                                .id(sessionExercise.getExercise().getId())
+                                .targetWord(sessionExercise.getExercise().getTargetWord())
+                                .phonemeFocus(sessionExercise.getExercise().getPhonemeFocus())
+                                .difficulty(sessionExercise.getExercise().getDifficulty())
+                                .mediaUrl(sessionExercise.getExercise().getMediaUrl())
+                                .instructions(sessionExercise.getExercise().getInstructions())
+                                .build();
 
-    private SessionDetailResponse toDetailResponse(Session session) {
-        List<SessionExerciseResponse> exerciseResponses = session.getSessionExercises().stream()
-                .map(this::toSessionExerciseResponse)
-                .collect(Collectors.toList());
+                return new SessionExerciseResponse(
+                                sessionExercise.getSequenceOrder(),
+                                exerciseResponse);
+        }
 
-        List<AttemptResponse> attemptResponses = session.getAttempts().stream()
-                .map(this::toAttemptResponse)
-                .collect(Collectors.toList());
-
-        return SessionDetailResponse.builder()
-                .id(session.getId())
-                .childId(session.getChildId())
-                .status(session.getStatus().name())
-                .startedAt(session.getStartedAt())
-                .completedAt(session.getCompletedAt())
-                .totalScore(session.getTotalScore())
-                .exercises(exerciseResponses)
-                .attempts(attemptResponses)
-                .build();
-    }
-
-    private SessionExerciseResponse toSessionExerciseResponse(SessionExercise sessionExercise) {
-        Exercise exercise = sessionExercise.getExercise();
-
-        ExerciseResponse exerciseResponse = ExerciseResponse.builder()
-                .id(exercise.getId())
-                .targetWord(exercise.getTargetWord())
-                .phonemeFocus(exercise.getPhonemeFocus())
-                .difficulty(exercise.getDifficulty())
-                .mediaUrl(exercise.getMediaUrl())
-                .instructions(exercise.getInstructions())
-                .build();
-
-        return SessionExerciseResponse.builder()
-                .sequenceOrder(sessionExercise.getSequenceOrder())
-                .exercise(exerciseResponse)
-                .build();
-    }
-
-    private AttemptResponse toAttemptResponse(Attempt attempt) {
-        return AttemptResponse.builder()
-                .id(attempt.getId())
-                .sessionId(attempt.getSession().getId())
-                .exerciseId(attempt.getExercise().getId())
-                .attemptNumber(attempt.getAttemptNumber())
-                .audioUrl(attempt.getAudioUrl())
-                .accuracyScore(attempt.getAccuracyScore())
-                .aiFeedback(attempt.getAiFeedback())
-                .aiFeedbackAudioUrl(attempt.getAiFeedbackAudioUrl())
-                .passed(attempt.getPassed())
-                .recordedAt(attempt.getRecordedAt())
-                .evaluatedAt(attempt.getEvaluatedAt())
-                .build();
-    }
+        private AttemptResponse toAttemptResponse(Attempt attempt) {
+                return AttemptResponse.builder()
+                                .id(attempt.getId())
+                                .sessionId(attempt.getSession().getId())
+                                .exerciseId(attempt.getExercise().getId())
+                                .attemptNumber(attempt.getAttemptNumber())
+                                .audioUrl(attempt.getAudioUrl())
+                                .accuracyScore(attempt.getAccuracyScore())
+                                .aiFeedback(attempt.getAiFeedback())
+                                .aiFeedbackAudioUrl(attempt.getAiFeedbackAudioUrl())
+                                .passed(attempt.getPassed())
+                                .recordedAt(attempt.getRecordedAt())
+                                .evaluatedAt(attempt.getEvaluatedAt())
+                                .build();
+        }
 }

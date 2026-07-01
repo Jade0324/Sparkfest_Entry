@@ -7,14 +7,22 @@ import java.math.BigDecimal;
 @Data
 public class SubmitAttemptRequest {
 
-    @NotNull
+    @NotNull(message = "exerciseId is required")
     private Long exerciseId;
 
-    @NotBlank
+    // What the child said — from the frontend's Web Speech API / ASR
+    private String transcript;
+
+    // Optional for MVP — frontend may send transcript-only
     private String audioUrl;
 
-    @NotNull
-    @DecimalMin("0.00")
-    @DecimalMax("100.00")
+    @DecimalMin(value = "0.00", message = "accuracyScore must be >= 0")
+    @DecimalMax(value = "100.00", message = "accuracyScore must be <= 100")
     private BigDecimal accuracyScore;
+
+    @AssertTrue(message = "Either transcript or audioUrl must be provided")
+    public boolean hasContent() {
+        return (transcript != null && !transcript.isBlank())
+                || (audioUrl != null && !audioUrl.isBlank());
+    }
 }
