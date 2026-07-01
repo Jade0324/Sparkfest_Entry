@@ -10,4 +10,6 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
     Page<Exercise> findByIsActiveTrue(Pageable pageable);
 
     Page<Exercise> findByDifficultyAndIsActiveTrue(Short difficulty, Pageable pageable);
+
+    Page<Exercise> findByDifficulty(Short difficulty, Pageable pageable);
 }
