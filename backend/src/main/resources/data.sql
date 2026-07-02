@@ -1,4 +1,4 @@
-INSERT INTO exercises (
+INSERT INTO exercisesgig (
 
     target_word, category, difficulty, is_active, 
 
