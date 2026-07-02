@@ -21,7 +21,7 @@ export default function GetStarted({ onNext }) {
           />
         </div>
 
-            {/* App name */}
+        {/* App name */}
         <h1 className="text-4xl font-extrabold tracking-tight mb-1 text-center">
             <span className="text-white">LORO</span>
         </h1>
@@ -29,7 +29,7 @@ export default function GetStarted({ onNext }) {
           Speech Progress Buddy
         </p>
         <p className="text-indigo-200 text-sm text-center mb-10 leading-relaxed px-4">
-          Speech Progress Buddy.
+          A safe, friendly space for children to grow their voice - one word at a time.
         </p>
 
         {/* Illustration */}
