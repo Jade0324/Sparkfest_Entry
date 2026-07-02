@@ -58,16 +58,19 @@ export default function TopicPicker({ onBack, onPickCategory }) {
 
         <div className="flex items-center gap-2 mb-5">
           <div className="w-9 h-9 rounded-2xl bg-[#EDEAFB] flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-[#6B5AE0]" />
+            <Sparkles className="w-5 h-5 text-[#2881f2]" />
           </div>
           <p className="text-sm font-semibold text-gray-500">Pick something fun to practice today!</p>
         </div>
 
         {loading && (
-          <div className="grid grid-cols-2 gap-4">
-            {[0, 1, 2, 3].map(i => (
-              <div key={i} className="h-40 rounded-3xl bg-gray-100 animate-pulse" />
-            ))}
+          <div className="flex flex-col items-center justify-center py-10 gap-3">
+            <img
+              src="/src/assets/FLAP.gif"
+              alt="FLAP loading mascot"
+              className="w-16 h-16 object-contain"
+            />
+            <p className="text-sm text-gray-500 font-medium">Loading topics...</p>
           </div>
         )}
 

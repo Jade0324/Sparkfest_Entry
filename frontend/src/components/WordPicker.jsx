@@ -124,10 +124,13 @@ export default function WordPicker({ category, onBack, onStartSession }) {
         <p className="text-sm font-semibold text-gray-500 mb-5">Pick a word to practice</p>
 
         {loading && (
-          <div className="grid grid-cols-2 gap-4">
-            {[0, 1, 2, 3].map(i => (
-              <div key={i} className="h-40 rounded-3xl bg-gray-100 animate-pulse" />
-            ))}
+          <div className="flex flex-col items-center justify-center py-10 gap-3">
+            <img
+              src="/src/assets/FLAP.gif"
+              alt="FLAP loading mascot"
+              className="w-16 h-16 object-contain"
+            />
+            <p className="text-sm text-gray-500 font-medium">Loading words...</p>
           </div>
         )}
 
@@ -168,7 +171,11 @@ export default function WordPicker({ category, onBack, onStartSession }) {
 
                   {isStarting && (
                     <div className="absolute inset-0 bg-white/70 rounded-3xl flex items-center justify-center">
-                      <div className="w-6 h-6 border-2 border-[#6B5AE0] border-t-transparent rounded-full animate-spin" />
+                      <img
+                        src="/src/assets/FLAP.gif"
+                        alt="FLAP loading mascot"
+                        className="w-10 h-10 object-contain"
+                      />
                     </div>
                   )}
                 </button>

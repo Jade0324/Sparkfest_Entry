@@ -37,8 +37,12 @@ export default function Login({ onLogin }) {
           </svg>
         </div>
         <div className="flex justify-center mb-3">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-3xl">👦🏻</span>
+          <div className="w-50 h-50 flex items-center justify-center overflow-hidden">
+            <img
+              src="/src/assets/FLAP.gif"
+              alt="FLAP mascot"
+              className="w-full h-full object-contain scale-125 origin-center"
+            />
           </div>
         </div>
         <h1 className="text-white text-2xl font-extrabold text-center">Welcome Back!</h1>
@@ -60,7 +64,7 @@ export default function Login({ onLogin }) {
               onChange={e => setUsername(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
               placeholder="e.g. juan123"
-              className="w-full border-2 border-gray-100 focus:border-[#6B5AE0] rounded-2xl px-4 py-3 text-sm text-[#1A2C5B] font-medium outline-none transition-colors bg-gray-50"
+              className="w-full border-2 border-gray-100 focus:border-[#2881f2] rounded-2xl px-4 py-3 text-sm text-[#1A2C5B] font-medium outline-none transition-colors bg-gray-50"
             />
           </div>
 
@@ -74,7 +78,7 @@ export default function Login({ onLogin }) {
               onChange={e => setPassword(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
               placeholder="••••••••"
-              className="w-full border-2 border-gray-100 focus:border-[#6B5AE0] rounded-2xl px-4 py-3 text-sm text-[#1A2C5B] font-medium outline-none transition-colors bg-gray-50"
+              className="w-full border-2 border-gray-100 focus:border-[#2881f2] rounded-2xl px-4 py-3 text-sm text-[#1A2C5B] font-medium outline-none transition-colors bg-gray-50"
             />
           </div>
 
@@ -87,7 +91,7 @@ export default function Login({ onLogin }) {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full py-4 bg-[#6B5AE0] text-white rounded-2xl font-extrabold text-base shadow-md shadow-indigo-200 active:scale-95 transition-transform disabled:opacity-70"
+            className="w-full py-4 bg-[#2881f2] text-white rounded-2xl font-extrabold text-base shadow-md shadow-indigo-200 active:scale-95 transition-transform disabled:opacity-70"
           >
             {loading ? 'Signing in...' : 'Sign In 👋'}
           </button>

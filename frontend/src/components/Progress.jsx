@@ -48,7 +48,7 @@ export default function Progress({ onBack }) {
 
         {/* Hero card */}
         <div className="bg-[#1A2C5B] rounded-3xl p-5 mb-4 relative overflow-hidden">
-          <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-[#6B5AE0] rounded-full opacity-20" />
+          <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-[#2881f2] rounded-full opacity-20" />
           <div className="flex items-center gap-3 mb-3">
             <span className="text-3xl">👦🏻</span>
             <div>
@@ -64,8 +64,13 @@ export default function Progress({ onBack }) {
 
         {/* Loading */}
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-4xl animate-bounce">🤖</div>
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <img
+              src="/src/assets/FLAP.gif"
+              alt="FLAP loading mascot"
+              className="w-16 h-16 object-contain"
+            />
+            <p className="text-sm text-gray-500 font-medium">Loading your progress...</p>
           </div>
         )}
 
@@ -94,7 +99,7 @@ export default function Progress({ onBack }) {
                     <div key={i} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-50 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-                          <Target size={18} className="text-[#6B5AE0]" />
+                          <Target size={18} className="text-[#2881f2]" />
                         </div>
                         <div>
                           <p className="font-semibold text-sm text-[#1A2C5B]">Session #{s.id}</p>
@@ -121,7 +126,7 @@ export default function Progress({ onBack }) {
             <p className="text-gray-400 text-sm font-medium text-center">
               Complete your first learning session to see progress here!
             </p>
-            <button onClick={onBack} className="px-6 py-3 bg-[#6B5AE0] text-white rounded-2xl font-bold text-sm active:scale-95 mt-2">
+            <button onClick={onBack} className="px-6 py-3 bg-[#2881f2] text-white rounded-2xl font-bold text-sm active:scale-95 mt-2">
               Start a Session
             </button>
           </div>

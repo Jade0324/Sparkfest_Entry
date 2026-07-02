@@ -565,7 +565,11 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
   // ══════════════════════════════════════════════════════
   if (loading) return (
     <div className="flex flex-col h-full bg-[#F0F4FF] items-center justify-center gap-4">
-      <div className="text-5xl animate-bounce">🦜</div>
+      <img
+        src="/src/assets/FLAP.gif"
+        alt="FLAP loading mascot"
+        className="w-20 h-20 object-contain"
+      />
       <p className="text-[#1A2C5B] font-semibold text-sm">Loading your adventure...</p>
     </div>
   );
@@ -575,7 +579,7 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
       <div className="text-5xl">⚠️</div>
       <p className="text-red-400 text-sm text-center font-medium">{errorMsg}</p>
       <button onClick={onBack}
-        className="px-8 py-3 bg-[#6B5AE0] text-white rounded-2xl font-bold">
+        className="px-8 py-3 bg-[#2881f2] text-white rounded-2xl font-bold">
         Go Back
       </button>
     </div>
@@ -608,7 +612,7 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
           </div>
           {score !== null && (
             <div className="bg-indigo-50 rounded-3xl p-4 text-center mb-5">
-              <p className="text-4xl font-extrabold text-[#6B5AE0]">{score}%</p>
+              <p className="text-4xl font-extrabold text-[#2881f2]">{score}%</p>
               <p className="text-xs text-gray-500 font-medium mt-1">Overall Accuracy</p>
             </div>
           )}
@@ -646,7 +650,7 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
             })}
           </div>
           <button onClick={onComplete}
-            className="w-full py-4 bg-[#6B5AE0] text-white rounded-2xl font-bold
+            className="w-full py-4 bg-[#2881f2] text-white rounded-2xl font-bold
               flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform">
             Back to Home <ArrowRight size={18} />
           </button>
@@ -675,7 +679,7 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
         No exercises found. Seed the database via POST /api/v1/exercises
       </p>
       <button onClick={onBack}
-        className="px-8 py-3 bg-[#6B5AE0] text-white rounded-2xl font-bold">Go Back</button>
+        className="px-8 py-3 bg-[#2881f2] text-white rounded-2xl font-bold">Go Back</button>
     </div>
   );
 
@@ -767,7 +771,7 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
             {getEmoji(currentEx.targetWord)}
             </span>
           <button onClick={() => speakWord(activeLv?.target)}
-            className="absolute bottom-3 right-3 w-10 h-10 bg-[#6B5AE0] rounded-full
+            className="absolute bottom-3 right-3 w-10 h-10 bg-[#2881f2] rounded-full
               flex items-center justify-center text-white shadow-lg active:scale-95">
             <Volume2 size={17} />
           </button>
@@ -845,7 +849,7 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
                     ? 'bg-gray-300 shadow-none'
                     : listening
                     ? 'bg-rose-400 shadow-rose-200'
-                    : 'bg-[#6B5AE0] shadow-violet-200 hover:bg-[#5A48D0]'
+                    : 'bg-[#2881f2] shadow-violet-200 hover:bg-[#1f6fd8]'
                 }`}>
                 <Mic size={36} />
               </button>
@@ -867,7 +871,7 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
               </button>
             )}
             <button onClick={handleNext}
-              className="flex-1 py-4 bg-[#6B5AE0] text-white rounded-2xl font-bold
+              className="flex-1 py-4 bg-[#2881f2] text-white rounded-2xl font-bold
                 flex items-center justify-center gap-2 shadow-md
                 active:scale-95 transition-transform">
               {currentLevel === 2 && exIndex + 1 >= exercises.length

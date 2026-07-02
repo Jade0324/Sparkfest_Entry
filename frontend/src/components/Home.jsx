@@ -18,20 +18,15 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
   return (
     <div className="flex flex-col h-full bg-[#F8F9FC] relative overflow-hidden">
 
-      <div className="flex justify-between items-center p-6 bg-white shrink-0">
+      <div className="flex justify-between items-center px-6 py-4 bg-white shrink-0">
         <div className="w-6 h-6" />
-        <div className="flex items-center gap-1">
-          <svg className="w-6 h-6 text-[#1A2C5B]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M85 50 C85 69 69 85 50 85 H25 L35 75 C19 65 15 45 25 30 C35 15 55 10 70 20 C80 30 85 40 85 50 Z" />
-            <circle cx="38" cy="45" r="5" fill="currentColor" stroke="none"/>
-            <circle cx="62" cy="45" r="5" fill="currentColor" stroke="none"/>
-            <path d="M38 60 Q50 72 62 60" />
-          </svg>
-          <h1 className="text-lg font-extrabold tracking-tight">
-            <span className="text-[#1A2C5B]">Talino</span>
-            <span className="text-[#F8A03E]">Tini</span>
-            <span className="text-[#F495A5]">g</span>
-          </h1>
+        <div className="flex items-center gap-2">
+          <img
+            src="/src/assets/INVERT.svg"
+            alt="LORO logo"
+            className="w-8 h-8 object-contain opacity-70"
+          />
+          <h1 className="text-lg font-extrabold tracking-tight text-[#1A2C5B]">LORO</h1>
         </div>
         <Bell className="w-6 h-6 text-gray-600" />
       </div>
@@ -54,7 +49,13 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
               </div>
             </div>
           </div>
-          <div className="text-3xl bg-green-50 p-2 rounded-2xl">🤖</div>
+          <div className="w-[100px] h-[100px] flex items-center justify-center overflow-hidden rounded-2xl">
+            <img
+              src="/src/assets/IDLE.gif"
+              alt="FLAP idle mascot"
+              className="w-full h-full object-contain"
+            />
+          </div>
         </div>
 
         <h3 className="font-bold text-[#1A2C5B] mb-3">Overview</h3>
@@ -77,18 +78,18 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
 
         <div className="flex justify-between items-center mb-6 relative">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -z-10 rounded-full translate-y-2" />
-          <div className="absolute top-1/2 left-0 w-1/2 h-1 bg-[#4A5CE0] -z-10 rounded-full translate-y-2" />
+          <div className="absolute top-1/2 left-0 w-1/2 h-1 bg-[#2881f2] -z-10 rounded-full translate-y-2" />
           {[
             { label: 'Tier 1', done: true },
             { label: 'Tier 2', active: true },
             { label: 'Tier 3', locked: true },
           ].map((tier, i) => (
             <div key={i} className="flex flex-col items-center gap-1 bg-[#F8F9FC] px-1">
-              <span className={`text-xs font-semibold ${tier.active ? 'text-[#4A5CE0]' : tier.done ? 'text-green-500' : 'text-gray-400'}`}>
+              <span className={`text-xs font-semibold ${tier.active ? 'text-[#2881f2]' : tier.done ? 'text-green-500' : 'text-gray-400'}`}>
                 {tier.label}
               </span>
               <div className={`${tier.active ? 'w-8 h-8 ring-4 ring-[#E0E4FF]' : 'w-6 h-6'} ${
-                tier.done ? 'bg-green-500' : tier.active ? 'bg-[#4A5CE0]' : 'bg-gray-200'
+                tier.done ? 'bg-green-500' : tier.active ? 'bg-[#2881f2]' : 'bg-gray-200'
               } rounded-full flex items-center justify-center text-white`}>
                 {tier.done ? <Check size={14} /> : tier.active ? <Star size={16} className="fill-white" /> : <Lock size={12} className="text-gray-400" />}
               </div>
@@ -98,7 +99,7 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
 
         <div className="flex justify-between items-end mb-3">
           <h3 className="font-bold text-[#1A2C5B]">Recent Sessions</h3>
-          <button onClick={onOpenProgress} className="text-xs font-semibold text-[#4A5CE0]">View all</button>
+          <button onClick={onOpenProgress} className="text-xs font-semibold text-[#2881f2]">View all</button>
         </div>
         <div className="space-y-3">
           {summary.recentSessions.map((s, i) => (
@@ -122,7 +123,7 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
       <div className="absolute bottom-20 left-0 w-full px-5 pointer-events-none">
         <button
           onClick={onStartSession}
-          className="w-full bg-[#6B5AE0] hover:bg-[#5A48D0] pointer-events-auto text-white rounded-3xl py-4 px-4 flex items-center justify-between shadow-lg shadow-indigo-200 transition-transform active:scale-95"
+          className="w-full bg-[#2881f2] hover:bg-[#1f6fd8] pointer-events-auto text-white rounded-3xl py-4 px-4 flex items-center justify-between shadow-lg shadow-blue-200 transition-transform active:scale-95"
         >
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <Mic size={18} className="text-white" />
@@ -135,19 +136,19 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
       </div>
 
       <div className="bg-white border-t border-gray-100 flex justify-around items-center py-3 px-4 shrink-0 absolute bottom-0 w-full">
-        <button className="flex flex-col items-center gap-1 text-[#6B5AE0]">
+        <button className="flex flex-col items-center gap-1 text-[#2881f2]">
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
           <span className="text-[10px] font-semibold">Home</span>
         </button>
-        <button onClick={onOpenProgress} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#6B5AE0]">
+        <button onClick={onOpenProgress} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#2881f2]">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
           <span className="text-[10px] font-medium">Dashboard</span>
         </button>
-        <button onClick={onOpenDictionary} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#6B5AE0]">
+        <button onClick={onOpenDictionary} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#2881f2]">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
           <span className="text-[10px] font-medium">Dictionary</span>
         </button>
-        <button onClick={onOpenAccount} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#6B5AE0]">
+        <button onClick={onOpenAccount} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#2881f2]">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
           <span className="text-[10px] font-medium">Account</span>
         </button>

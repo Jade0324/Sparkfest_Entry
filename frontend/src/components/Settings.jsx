@@ -30,7 +30,7 @@ export default function Settings({ onBack }) {
               type="range" min="0.5" max="1.5" step="0.25"
               value={speechRate}
               onChange={e => setSpeechRate(Number(e.target.value))}
-              className="w-24 accent-[#6B5AE0]"
+              className="w-24 accent-[#2881f2]"
             />
           ),
         },
@@ -43,7 +43,7 @@ export default function Settings({ onBack }) {
           control: (
             <button
               onClick={() => setMicEnabled(v => !v)}
-              className={`w-12 h-6 rounded-full transition-colors relative ${micEnabled ? 'bg-[#6B5AE0]' : 'bg-gray-200'}`}
+              className={`w-12 h-6 rounded-full transition-colors relative ${micEnabled ? 'bg-[#2881f2]' : 'bg-gray-200'}`}
             >
               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${micEnabled ? 'left-7' : 'left-1'}`} />
             </button>
@@ -133,7 +133,7 @@ export default function Settings({ onBack }) {
         {/* Test TTS button */}
         <button
           onClick={speakTest}
-          className="w-full py-3.5 bg-white border-2 border-[#6B5AE0] text-[#6B5AE0] rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+          className="w-full py-3.5 bg-white border-2 border-[#2881f2] text-[#2881f2] rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
         >
           <Volume2 size={16} /> Test Voice Speed
         </button>

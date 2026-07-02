@@ -146,7 +146,7 @@ function WordRow({ word, onPractice }) {
                   lv.score !== null && lv.score >= 80
                     ? 'bg-green-100 text-green-600'
                     : lv.unlocked
-                    ? 'bg-indigo-100 text-[#6B5AE0]'
+                    ? 'bg-indigo-100 text-[#2881f2]'
                     : 'bg-gray-100 text-gray-400'
                 }`}>
                   {lv.score !== null && lv.score >= 80
@@ -174,7 +174,7 @@ function WordRow({ word, onPractice }) {
                   ) : (
                     <button
                       onClick={() => speak(lv.prompt)}
-                      className="w-7 h-7 rounded-full bg-indigo-50 flex items-center justify-center text-[#6B5AE0] active:scale-95"
+                      className="w-7 h-7 rounded-full bg-indigo-50 flex items-center justify-center text-[#2881f2] active:scale-95"
                     >
                       <Volume2 size={13} />
                     </button>
@@ -194,11 +194,11 @@ function WordRow({ word, onPractice }) {
 
           {/* AI Feedback Bubble */}
           <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-3 border border-indigo-100 flex gap-2.5 items-start">
-            <div className="w-8 h-8 bg-[#6B5AE0] rounded-full flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+            <div className="w-8 h-8 bg-[#2881f2] rounded-full flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
               <Sparkles size={14} className="text-white" />
             </div>
             <div className="flex-1">
-              <p className="text-[10px] font-extrabold text-[#6B5AE0] uppercase tracking-wider mb-1">
+              <p className="text-[10px] font-extrabold text-[#2881f2] uppercase tracking-wider mb-1">
                 AI Coach Says
               </p>
               <p className="text-xs text-gray-600 leading-relaxed">{aiFeedback}</p>
@@ -209,7 +209,7 @@ function WordRow({ word, onPractice }) {
           {(word.accuracy === null || word.accuracy < 85) && (
             <button
               onClick={() => onPractice && onPractice(word.exerciseId, word.targetWord)}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#6B5AE0] text-white rounded-2xl font-extrabold text-sm shadow-md shadow-indigo-200 active:scale-95 transition-transform"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-[#2881f2] text-white rounded-2xl font-extrabold text-sm shadow-md shadow-indigo-200 active:scale-95 transition-transform"
             >
               <Mic size={16} />
               Practice Now
@@ -318,7 +318,7 @@ export default function Dictionary({ onBack, onPractice }) {
           <span className="text-2xl mt-0.5">👦🏻</span>
           <p className="text-xs text-gray-600 leading-relaxed">
             These words are curated from Juan's recent sessions. Tap any word to see
-            all 3 practice levels and your <span className="text-[#6B5AE0] font-semibold">AI coach feedback</span>!
+            all 3 practice levels and your <span className="text-[#2881f2] font-semibold">AI coach feedback</span>!
           </p>
         </div>
 
@@ -348,7 +348,7 @@ export default function Dictionary({ onBack, onPractice }) {
               onClick={() => setFilter(f)}
               className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${
                 filter === f
-                  ? 'bg-[#6B5AE0] text-white shadow-md'
+                  ? 'bg-[#2881f2] text-white shadow-md'
                   : 'bg-white text-gray-500 border border-gray-200'
               }`}
             >
@@ -365,8 +365,13 @@ export default function Dictionary({ onBack, onPractice }) {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-10">
-              <div className="text-3xl animate-bounce">🤖</div>
+            <div className="flex flex-col items-center justify-center py-10 gap-3">
+              <img
+                src="/src/assets/FLAP.gif"
+                alt="FLAP loading mascot"
+                className="w-16 h-16 object-contain"
+              />
+              <p className="text-sm text-gray-500 font-medium">Loading your words...</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 gap-2">
