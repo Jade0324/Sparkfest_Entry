@@ -27,7 +27,7 @@ export default function GetStarted({ onNext }) {
           <span className="text-[#4ea3ff]">: 4Ps</span>
         </h1>
         <p className="text-indigo-200 text-sm text-center mb-10 leading-relaxed px-4">
-          A safe, friendly space for children to grow their voice — one word at a time.
+          Speech Progress Buddy.
         </p>
 
         {/* Illustration */}

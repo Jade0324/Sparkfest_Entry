@@ -107,9 +107,7 @@ export default function Login({ onLogin }) {
         {/* App branding */}
         <div className="flex items-center justify-center gap-1 mt-6">
           <p className="text-gray-400 text-xs">Powered by</p>
-          <span className="text-xs font-extrabold text-[#1A2C5B]">Talino</span>
-          <span className="text-xs font-extrabold text-[#F8A03E]">Tini</span>
-          <span className="text-xs font-extrabold text-[#F495A5]">g</span>
+          <span className="text-xs font-extrabold text-[#1A2C5B]">4ps</span>
         </div>
       </div>
     </div>

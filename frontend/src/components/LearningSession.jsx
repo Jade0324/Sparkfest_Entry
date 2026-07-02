@@ -28,19 +28,23 @@ const INCORRECT_LINES = [
 // ═══════════════════════════════════════════════════════════
 function Mascot({ state = 'idle' }) {
   const states = {
-    idle:        { body: '🦜', bubble: null },
-    listening:   { body: '🦜', bubble: "I'm listening… speak up! 🎙️" },
-    celebrating: { body: '🦜', bubble: "Amazing job! Let's unlock the next part! 🌟" },
-    encouraging: { body: '🦜', bubble: "Almost there! Give it another try! 💪" },
+    idle:        { bubble: null },
+    listening:   { bubble: "I'm listening… speak up! 🎙️" },
+    celebrating: { bubble: "Amazing job! Let's unlock the next part! 🌟" },
+    encouraging: { bubble: "Almost there! Give it another try! 💪" },
   };
   const current = states[state] || states.idle;
   return (
     <div className="flex flex-col items-center gap-1 select-none">
-      <div className={`text-5xl transition-all duration-300 ${
+      <div className={`transition-all duration-300 ${
         state === 'celebrating' ? 'animate-bounce' :
         state === 'listening'   ? 'animate-pulse' : ''
       }`}>
-        {current.body}
+        <img
+          src="/src/assets/7.svg"
+          alt="LORO mascot"
+          className="w-24 h-24 object-contain drop-shadow-sm"
+        />
       </div>
       {current.bubble && (
         <div className="relative max-w-[220px]">
@@ -87,27 +91,34 @@ function Confetti() {
 // LEVEL CONFIG — derived from exercise object
 // ═══════════════════════════════════════════════════════════
 function getLevels(exercise) {
+  const baseName = (exercise.targetWord || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   return [
     {
       level:  1,
       label:  'Word',
       prompt: exercise.level1Prompt   || `What is this?`,
-      target: exercise.level1Text     || exercise.targetWord,
-      image:  exercise.level1ImageUrl || exercise.mediaUrl || null,
+      // Default target for level 1: e.g. "bird flying"
+      target: exercise.level1Text     || `${exercise.targetWord} flying`,
+      // Prefer explicit image, then local gif named like "{baseName}1.gif" (car uses car1.gif), then mediaUrl
+      image:  exercise.level1ImageUrl || (baseName === 'car' ? `/src/assets/car1.gif` : `/src/assets/${baseName}1.gif`) || exercise.mediaUrl || null,
     },
     {
       level:  2,
       label:  'Phrase',
       prompt: exercise.level2Prompt   || `What is the ${exercise.targetWord} doing?`,
-      target: exercise.level2Text     || exercise.targetWord,
-      image:  exercise.level2ImageUrl || exercise.level1ImageUrl || exercise.mediaUrl || null,
+      // Default target for level 2: same phrase-style (e.g. "bird flying")
+      target: exercise.level2Text     || `${exercise.targetWord} flying`,
+      // Prefer explicit image, then local gif named like "{baseName}2.gif" (car uses car2.gif), then fallbacks
+      image:  exercise.level2ImageUrl || (baseName === 'car' ? `/src/assets/car2.gif` : `/src/assets/${baseName}2.gif`) || exercise.level1ImageUrl || exercise.mediaUrl || null,
     },
     {
       level:  3,
       label:  'Sentence',
       prompt: exercise.level3Prompt   || `Can you say a full sentence?`,
-      target: exercise.level3Text     || exercise.targetWord,
-      image:  exercise.level3ImageUrl || exercise.level2ImageUrl || exercise.mediaUrl || null,
+      // Default target for level 3: sentence (e.g. "bird is in the tree")
+      target: exercise.level3Text     || `${exercise.targetWord} is in the tree`,
+      // Prefer explicit image, then local gif named like "{baseName}3.gif" (car maps back to car1.gif), then fallbacks
+      image:  exercise.level3ImageUrl || (baseName === 'car' ? `/src/assets/car1.gif` : `/src/assets/${baseName}3.gif`) || exercise.level2ImageUrl || exercise.level1ImageUrl || exercise.mediaUrl || null,
     },
   ];
 }
@@ -668,6 +679,15 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
   const activeLv    = levelConfig[currentLevel];
   const levelColor  = LEVEL_COLORS[currentLevel];
 
+  // Image sizing: make apple gifs smaller so they fit the card nicely
+  const imageSrc   = activeLv?.image || '';
+  const imageBase  = (currentEx?.targetWord || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const imageClass = imageSrc
+    ? (['apple','ball','bird','cat','car'].includes(imageBase)
+        ? 'w-40 h-32 object-contain transition-all duration-500'
+        : 'w-full h-40 object-cover transition-all duration-500')
+    : '';
+
   const totalSteps  = exercises.length * 3;
   const doneSteps   = exIndex * 3 + currentLevel;
   const progressPct = totalSteps > 0 ? Math.round((doneSteps / totalSteps) * 100) : 0;
@@ -754,14 +774,14 @@ export default function LearningSession({ sessionId, onComplete, onBack }) {
           flex items-center justify-center" style={{ minHeight: 160 }}>
             {activeLv?.image
             ? <img
-                src={activeLv.image}
-                alt={activeLv.target}
-                className="w-full h-40 object-cover transition-all duration-500"
-                onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                }}
-                />
+              src={activeLv.image}
+              alt={activeLv.target}
+              className={imageClass}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+              />
             : null
             }
             <span
