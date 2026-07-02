@@ -20,13 +20,18 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
 
       <div className="flex justify-between items-center px-6 py-4 bg-white shrink-0">
         <div className="w-6 h-6" />
-        <div className="flex items-center gap-2">
-          <img
-            src="/src/assets/INVERT.svg"
-            alt="LORO logo"
-            className="w-8 h-8 object-contain opacity-70"
-          />
-          <h1 className="text-lg font-extrabold tracking-tight text-[#1A2C5B]">LORO</h1>
+        <div className="flex items-center gap-1">
+          <svg className="w-6 h-6 text-[#1A2C5B]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M85 50 C85 69 69 85 50 85 H25 L35 75 C19 65 15 45 25 30 C35 15 55 10 70 20 C80 30 85 40 85 50 Z" />
+            <circle cx="38" cy="45" r="5" fill="currentColor" stroke="none"/>
+            <circle cx="62" cy="45" r="5" fill="currentColor" stroke="none"/>
+            <path d="M38 60 Q50 72 62 60" />
+          </svg>
+        <h1 className="text-lg font-extrabold tracking-tight">
+            <span className="text-[#1A2C5B]">L</span>
+            <span className="text-[#F8A03E]">OR</span>
+            <span className="text-[#F495A5]">O</span>
+          </h1>
         </div>
         <Bell className="w-6 h-6 text-gray-600" />
       </div>

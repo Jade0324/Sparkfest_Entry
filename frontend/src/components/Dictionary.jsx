@@ -4,8 +4,6 @@ import {
   Mic, Check, Lock, Star, Sparkles
 } from 'lucide-react';
 
-const API = 'http://localhost:8080/api/v1';
-
 // ── Priority config ────────────────────────────────────────
 function getPriority(accuracy) {
   if (accuracy === null || accuracy === undefined)
@@ -25,36 +23,26 @@ function scoreColor(score) {
   return 'text-green-600';
 }
 
-// ── Mock level data — replace with exercise.level1_text etc. from backend ──
-function buildLevels(targetWord, latestAccuracy) {
-  const acc = latestAccuracy ?? 0;
-  const article = ['a','e','i','o','u'].includes(targetWord[0]?.toLowerCase()) ? 'an' : 'a';
-  return [
-    {
-      level: 1,
-      label: 'Word',
-      prompt: targetWord,
-      score: acc > 0 ? Math.min(100, Math.round(acc + 15)) : null,
-      unlocked: true,
-    },
-    {
-      level: 2,
-      label: 'Phrase',
-      prompt: `I see ${article} ${targetWord.toLowerCase()}`,
-      score: acc >= 60 ? Math.round(acc) : null,
-      unlocked: acc >= 60,
-    },
-    {
-      level: 3,
-      label: 'Sentence',
-      prompt: `The ${targetWord.toLowerCase()} is very beautiful`,
-      score: acc >= 85 ? Math.round(acc) : null,
-      unlocked: acc >= 85,
-    },
-  ];
+// ── Build levels from REAL saved data (levelHistory) ───────
+// entry shape: { targetWord, level1Text, level2Text, level3Text,
+//                levels: { "0": {passed,accuracy,transcript}, "1": ..., "2": ... } }
+function buildLevelsFromHistory(entry) {
+  const texts  = [entry.level1Text, entry.level2Text, entry.level3Text];
+  const labels = ['Word', 'Phrase', 'Sentence'];
+  return [0, 1, 2].map((i) => {
+    const r = entry.levels?.[i] ?? entry.levels?.[String(i)] ?? null;
+    return {
+      level:    i + 1,
+      label:    labels[i],
+      prompt:   texts[i] || entry.targetWord,          // real seeded text
+      score:    r && typeof r.accuracy === 'number' ? Math.round(r.accuracy) : null,
+      unlocked: r !== null,                            // attempted = unlocked (real, not fabricated)
+      transcript: r?.transcript || null,
+    };
+  });
 }
 
-// ── Mock AI feedback (replace with attempt.aiFeedback from backend) ──────────
+// ── Templated AI feedback (real Gemini not wired yet — demo placeholder) ──
 function getMockFeedback(targetWord, accuracy) {
   if (accuracy === null || accuracy === undefined)
     return `Let's practice saying "${targetWord}" together! Tap the mic and give it a try. 🎙️`;
@@ -80,8 +68,8 @@ function speak(text) {
 function WordRow({ word, onPractice }) {
   const [open, setOpen] = useState(false);
   const { label: priorityLabel, color: priorityColor } = getPriority(word.accuracy);
-  const levels = buildLevels(word.targetWord, word.accuracy);
-  const aiFeedback = word.aiFeedback || getMockFeedback(word.targetWord, word.accuracy);
+  const levels = word.levels; // already built from real history
+  const aiFeedback = getMockFeedback(word.targetWord, word.accuracy);
 
   return (
     <div className={`border-b border-gray-50 last:border-0 transition-all ${open ? 'bg-indigo-50/30' : 'bg-white'}`}>
@@ -91,12 +79,10 @@ function WordRow({ word, onPractice }) {
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
       >
-        {/* Priority badge */}
         <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full shrink-0 min-w-[76px] text-center ${priorityColor}`}>
           {priorityLabel}
         </span>
 
-        {/* Word info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="font-extrabold text-sm text-[#1A2C5B] truncate">{word.targetWord}</span>
@@ -111,7 +97,6 @@ function WordRow({ word, onPractice }) {
           )}
         </div>
 
-        {/* Accuracy + chevron */}
         <div className="flex items-center gap-2 shrink-0">
           <span className={`font-extrabold text-sm ${scoreColor(word.accuracy)}`}>
             {word.accuracy !== null ? `${word.accuracy}%` : '—'}
@@ -141,7 +126,6 @@ function WordRow({ word, onPractice }) {
                   !lv.unlocked ? 'opacity-50' : ''
                 }`}
               >
-                {/* Level dot */}
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-extrabold ${
                   lv.score !== null && lv.score >= 80
                     ? 'bg-green-100 text-green-600'
@@ -157,13 +141,11 @@ function WordRow({ word, onPractice }) {
                   }
                 </div>
 
-                {/* Level info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-bold text-gray-400 uppercase">{lv.label}</p>
                   <p className="text-sm font-semibold text-[#1A2C5B] truncate">"{lv.prompt}"</p>
                 </div>
 
-                {/* Score or locked */}
                 <div className="shrink-0 flex items-center gap-1">
                   {!lv.unlocked ? (
                     <span className="text-[10px] text-gray-400 font-medium">Locked</span>
@@ -192,7 +174,7 @@ function WordRow({ word, onPractice }) {
             ))}
           </div>
 
-          {/* AI Feedback Bubble */}
+          {/* AI Feedback Bubble (templated for now) */}
           <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-3 border border-indigo-100 flex gap-2.5 items-start">
             <div className="w-8 h-8 bg-[#2881f2] rounded-full flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
               <Sparkles size={14} className="text-white" />
@@ -205,7 +187,6 @@ function WordRow({ word, onPractice }) {
             </div>
           </div>
 
-          {/* Practice Now button — only show if not fully mastered */}
           {(word.accuracy === null || word.accuracy < 85) && (
             <button
               onClick={() => onPractice && onPractice(word.exerciseId, word.targetWord)}
@@ -216,7 +197,6 @@ function WordRow({ word, onPractice }) {
             </button>
           )}
 
-          {/* Mastered state */}
           {word.accuracy !== null && word.accuracy >= 85 && (
             <div className="w-full flex items-center justify-center gap-2 py-3 bg-green-50 border border-green-200 rounded-2xl">
               <Star size={16} className="text-green-600 fill-green-600" />
@@ -230,7 +210,7 @@ function WordRow({ word, onPractice }) {
 }
 
 // ════════════════════════════════════════════════════════════
-// MAIN DICTIONARY COMPONENT
+// MAIN DICTIONARY COMPONENT — reads levelHistory (real data)
 // ════════════════════════════════════════════════════════════
 export default function Dictionary({ onBack, onPractice }) {
   const [words, setWords] = useState([]);
@@ -239,51 +219,54 @@ export default function Dictionary({ onBack, onPractice }) {
   const [stats, setStats] = useState({ total: 0, improving: 0, mastered: 0, accuracy: 0 });
 
   useEffect(() => {
-    (async () => {
-      const sessionId = localStorage.getItem('lastSessionId');
-      if (!sessionId) { setLoading(false); return; }
+    try {
+      const raw = localStorage.getItem('levelHistory');
+      if (!raw) { setLoading(false); return; }
 
-      try {
-        const res = await fetch(`${API}/sessions/${sessionId}/attempts`);
-        if (!res.ok) throw new Error();
-        const attempts = await res.json();
+      const history = JSON.parse(raw);
 
-        // Group by exerciseId — keep latest attempt per exercise
-        const byExercise = {};
-        for (const a of attempts) {
-          const key = a.exerciseId;
-          if (!byExercise[key] || a.attemptNumber > byExercise[key].attemptNumber) {
-            byExercise[key] = a;
-          }
-        }
+        const wordList = Object.entries(history)
+        .filter(([, entry]) => entry && entry.targetWord && entry.levels)
+        .map(([exerciseId, entry]) => {
+            // ... unchanged
+        const levels = buildLevelsFromHistory(entry);
 
-        const wordList = Object.values(byExercise).map(a => ({
-          exerciseId:  a.exerciseId,
-          targetWord:  a.targetWord,
-          nativeWord:  a.nativeWord,
-          transcript:  a.transcript || null,
-          accuracy:    a.accuracyScore !== null ? Math.round(Number(a.accuracyScore)) : null,
-          passed:      a.passed,
-          aiFeedback:  a.aiFeedback || null,
-        }));
+        // Overall word accuracy = average of attempted levels (real scores)
+        const scored = levels.map(l => l.score).filter(s => s !== null);
+        const accuracy = scored.length
+          ? Math.round(scored.reduce((a, b) => a + b, 0) / scored.length)
+          : null;
 
-        const avg = wordList.length
-          ? Math.round(wordList.reduce((s, w) => s + (w.accuracy ?? 0), 0) / wordList.length)
-          : 0;
+        // Best available transcript for the "Said:" preview (prefer last level attempted)
+        const lastTranscript =
+          levels[2]?.transcript || levels[1]?.transcript || levels[0]?.transcript || null;
 
-        setWords(wordList);
-        setStats({
-          total:     wordList.length,
-          improving: wordList.filter(w => w.accuracy !== null && w.accuracy >= 50 && w.accuracy < 85).length,
-          mastered:  wordList.filter(w => w.accuracy !== null && w.accuracy >= 85).length,
-          accuracy:  avg,
-        });
-      } catch {
-        // empty state handled below
-      } finally {
-        setLoading(false);
-      }
-    })();
+        return {
+          exerciseId:  isNaN(Number(exerciseId)) ? exerciseId : Number(exerciseId),
+          targetWord:  entry.targetWord,
+          nativeWord:  entry.nativeWord || null,
+          transcript:  lastTranscript,
+          accuracy,
+          levels,
+        };
+      });
+
+      const avg = wordList.length
+        ? Math.round(wordList.reduce((s, w) => s + (w.accuracy ?? 0), 0) / wordList.length)
+        : 0;
+
+      setWords(wordList);
+      setStats({
+        total:     wordList.length,
+        improving: wordList.filter(w => w.accuracy !== null && w.accuracy >= 50 && w.accuracy < 85).length,
+        mastered:  wordList.filter(w => w.accuracy !== null && w.accuracy >= 85).length,
+        accuracy:  avg,
+      });
+    } catch {
+      // corrupt/absent history → empty state handled below
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const FILTERS = ['All Words', 'High Priority', 'Improving', 'Mastered'];

@@ -21,11 +21,13 @@ export default function GetStarted({ onNext }) {
           />
         </div>
 
-        {/* App name */}
-        <h1 className="text-4xl font-extrabold tracking-tight mb-2 text-center">
-          <span className="text-[#ffffff]">LORO</span>
-          <span className="text-[#4ea3ff]">: 4Ps</span>
+            {/* App name */}
+        <h1 className="text-4xl font-extrabold tracking-tight mb-1 text-center">
+            <span className="text-white">LORO</span>
         </h1>
+        <p className="text-[#F8A03E] text-sm font-bold tracking-[0.15em] uppercase text-center mb-4">
+          Speech Progress Buddy
+        </p>
         <p className="text-indigo-200 text-sm text-center mb-10 leading-relaxed px-4">
           Speech Progress Buddy.
         </p>

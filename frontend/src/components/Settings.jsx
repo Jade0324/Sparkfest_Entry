@@ -86,7 +86,7 @@ export default function Settings({ onBack }) {
           icon: Info,
           color: 'text-blue-500',
           bg: 'bg-blue-50',
-          label: 'About TalinoTinig',
+          label: 'About LORO',
           sub: 'Version 1.0.0 · Hackathon MVP',
           control: <ChevronRight size={18} className="text-gray-300" />,
         },
