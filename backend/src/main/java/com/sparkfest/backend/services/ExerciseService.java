@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ExerciseService {
@@ -17,12 +19,23 @@ public class ExerciseService {
     private final ExerciseRepository exerciseRepository;
 
     @Transactional(readOnly = true)
-    public Page<ExerciseResponse> listExercises(Short difficulty, Pageable pageable) {
-        Page<Exercise> page = (difficulty != null)
-                ? exerciseRepository.findByDifficulty(difficulty, pageable)
-                : exerciseRepository.findAll(pageable);
+    public Page<ExerciseResponse> listExercises(Short difficulty, String category, Pageable pageable) {
+        Page<Exercise> page;
+
+        if (category != null && !category.isBlank()) {
+            page = exerciseRepository.findByCategoryAndIsActiveTrue(category, pageable);
+        } else if (difficulty != null) {
+            page = exerciseRepository.findByDifficulty(difficulty, pageable);
+        } else {
+            page = exerciseRepository.findAll(pageable);
+        }
 
         return page.map(this::toExerciseResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getCategories() {
+        return exerciseRepository.findDistinctCategories();
     }
 
     public ExerciseResponse getExercise(Long id) {
@@ -37,9 +50,10 @@ public class ExerciseService {
         Exercise exercise = Exercise.builder()
                 .targetWord(request.getTargetWord())
                 .nativeWord(request.getNativeWord())
-                .phonemeFocus(request.getPhonemeFocus()) // <-- Added this
+                .phonemeFocus(request.getPhonemeFocus())
+                .category(request.getCategory())
                 .difficulty(request.getDifficulty())
-                .mediaUrl(request.getMediaUrl()) // <-- Added this
+                .mediaUrl(request.getMediaUrl())
                 .instructions(request.getInstructions())
 
                 // Level 1
@@ -63,7 +77,6 @@ public class ExerciseService {
         return toExerciseResponse(saved);
     }
 
-    // The single, master mapper for the whole service
     private ExerciseResponse toExerciseResponse(Exercise exercise) {
         return ExerciseResponse.builder()
                 .id(exercise.getId())

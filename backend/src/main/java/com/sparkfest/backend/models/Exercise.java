@@ -30,6 +30,10 @@ public class Exercise {
     @Column(name = "phoneme_focus", length = 60)
     private String phonemeFocus;
 
+    // ── Category (e.g. "Animals", "Fruits", "Things") ───────
+    @Column(name = "category", length = 60)
+    private String category;
+
     @Builder.Default
     @Column(nullable = false)
     private Short difficulty = 1; // 1–5
@@ -42,8 +46,6 @@ public class Exercise {
     private Boolean isActive = true;
 
     // ── Level 1 — Single Word ───────────────────────────────
-    // e.g. prompt: "What animal is this?", target: "Dog"
-
     @Column(name = "level1_prompt", length = 255)
     private String level1Prompt;
 
@@ -54,8 +56,6 @@ public class Exercise {
     private String level1ImageUrl;
 
     // ── Level 2 — Phrase ────────────────────────────────────
-    // e.g. prompt: "What is the dog doing?", target: "Dog is eating"
-
     @Column(name = "level2_prompt", length = 255)
     private String level2Prompt;
 
@@ -66,8 +66,6 @@ public class Exercise {
     private String level2ImageUrl;
 
     // ── Level 3 — Full Sentence ─────────────────────────────
-    // e.g. prompt: "What is the dog eating?", target: "The dog is eating the bone"
-
     @Column(name = "level3_prompt", length = 255)
     private String level3Prompt;
 
@@ -78,19 +76,15 @@ public class Exercise {
     private String level3ImageUrl;
 
     // ── Legacy single mediaUrl (kept for backward compat) ───
-    // Used as fallback if level-specific images are null
-
     @Column(name = "media_url", length = 512)
     private String mediaUrl;
 
     // ── Relationships ───────────────────────────────────────
-
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<SessionExercise> sessionExercises = new ArrayList<>();
 
     // ── Audit ───────────────────────────────────────────────
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

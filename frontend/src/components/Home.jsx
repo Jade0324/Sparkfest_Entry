@@ -1,14 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Bell, Mic, BookOpen, Target, Star, Flame, Check, Lock } from 'lucide-react';
 
-const API = 'http://localhost:8080/api/v1';
-const CHILD_ID = 1; // hardcoded for hackathon — swap when auth is ready
-
 export default function Home({ onStartSession, onOpenProgress, onOpenDictionary, onOpenAccount }) {
-  const [starting, setStarting] = useState(false);
-  const [startError, setStartError] = useState('');
 
-  // Mock data — replace with real DashboardController once built
   const summary = {
     sessionsCompleted: 3,
     overallAccuracy: 72,
@@ -21,49 +15,11 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
     child: { name: 'Juan Dela Cruz', age: 7, grade: 'Grade 2', tier: 'Tier 2' }
   };
 
-  const handleStartSession = async () => {
-    setStarting(true);
-    setStartError('');
-    try {
-      // 1. Fetch exercises (up to 5, any difficulty)
-      const exRes = await fetch(`${API}/exercises?page=0&size=5`);
-      if (!exRes.ok) throw new Error('Could not fetch exercises from backend.');
-      const exData = await exRes.json();
-
-      if (!exData.content || exData.content.length === 0) {
-        setStartError('No exercises found. Seed exercises via POST /api/v1/exercises first.');
-        return;
-      }
-
-      const exerciseIds = exData.content.map(e => e.id);
-
-      // 2. Create a new session
-      const sessionRes = await fetch(`${API}/sessions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ childId: CHILD_ID, exerciseIds }),
-      });
-      if (!sessionRes.ok) throw new Error('Could not create session.');
-      const session = await sessionRes.json();
-
-      // 3. Save sessionId for Dictionary to read later
-      localStorage.setItem('lastSessionId', session.id);
-
-      // 4. Navigate to learning session
-      onStartSession(session.id);
-    } catch (err) {
-      setStartError(err.message || 'Failed to start. Is the backend running on port 8080?');
-    } finally {
-      setStarting(false);
-    }
-  };
-
   return (
     <div className="flex flex-col h-full bg-[#F8F9FC] relative overflow-hidden">
 
-      {/* Navbar */}
       <div className="flex justify-between items-center p-6 bg-white shrink-0">
-        <div className="w-6 h-6" /> {/* spacer */}
+        <div className="w-6 h-6" />
         <div className="flex items-center gap-1">
           <svg className="w-6 h-6 text-[#1A2C5B]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M85 50 C85 69 69 85 50 85 H25 L35 75 C19 65 15 45 25 30 C35 15 55 10 70 20 C80 30 85 40 85 50 Z" />
@@ -82,7 +38,6 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
 
       <div className="flex-1 overflow-y-auto pb-28 px-5 pt-4">
 
-        {/* Profile Card */}
         <div className="bg-white rounded-3xl p-4 flex items-center justify-between shadow-sm mb-6 border border-gray-100">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -102,7 +57,6 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
           <div className="text-3xl bg-green-50 p-2 rounded-2xl">🤖</div>
         </div>
 
-        {/* Stats */}
         <h3 className="font-bold text-[#1A2C5B] mb-3">Overview</h3>
         <div className="grid grid-cols-4 gap-2 mb-6">
           {[
@@ -121,7 +75,6 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
           ))}
         </div>
 
-        {/* Tier progress */}
         <div className="flex justify-between items-center mb-6 relative">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -z-10 rounded-full translate-y-2" />
           <div className="absolute top-1/2 left-0 w-1/2 h-1 bg-[#4A5CE0] -z-10 rounded-full translate-y-2" />
@@ -143,7 +96,6 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
           ))}
         </div>
 
-        {/* Recent Sessions */}
         <div className="flex justify-between items-end mb-3">
           <h3 className="font-bold text-[#1A2C5B]">Recent Sessions</h3>
           <button onClick={onOpenProgress} className="text-xs font-semibold text-[#4A5CE0]">View all</button>
@@ -164,34 +116,24 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
             </div>
           ))}
         </div>
-
-        {startError && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-2xl">
-            <p className="text-red-500 text-xs text-center font-medium">{startError}</p>
-          </div>
-        )}
       </div>
 
-      {/* FAB — Start Session */}
+      {/* FAB — Start Session → goes to Topic Picker */}
       <div className="absolute bottom-20 left-0 w-full px-5 pointer-events-none">
         <button
-          onClick={handleStartSession}
-          disabled={starting}
-          className="w-full bg-[#6B5AE0] hover:bg-[#5A48D0] pointer-events-auto text-white rounded-3xl py-4 px-4 flex items-center justify-between shadow-lg shadow-indigo-200 transition-transform active:scale-95 disabled:opacity-70"
+          onClick={onStartSession}
+          className="w-full bg-[#6B5AE0] hover:bg-[#5A48D0] pointer-events-auto text-white rounded-3xl py-4 px-4 flex items-center justify-between shadow-lg shadow-indigo-200 transition-transform active:scale-95"
         >
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <Mic size={18} className="text-white" />
           </div>
-          <span className="font-semibold text-base">
-            {starting ? 'Starting session...' : 'Start Learning Session'}
-          </span>
+          <span className="font-semibold text-base">Start Learning Session</span>
           <svg className="w-5 h-5 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
       </div>
 
-      {/* Bottom Navigation */}
       <div className="bg-white border-t border-gray-100 flex justify-around items-center py-3 px-4 shrink-0 absolute bottom-0 w-full">
         <button className="flex flex-col items-center gap-1 text-[#6B5AE0]">
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
