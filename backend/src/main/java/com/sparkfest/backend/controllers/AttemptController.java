@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "https://sparkfest-entry-2.onrender.com")
 @RestController
 @RequestMapping("/api/v1/sessions/{sessionId}/attempts")
 @RequiredArgsConstructor

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "https://sparkfest-entry-2.onrender.com")
 @RestController
 @RequestMapping("/api/v1/children/{childId}/dashboard")
 @RequiredArgsConstructor
