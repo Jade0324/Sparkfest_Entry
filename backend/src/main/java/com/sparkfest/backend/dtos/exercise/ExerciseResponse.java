@@ -12,6 +12,7 @@ public class ExerciseResponse {
     private Short difficulty;
     private String mediaUrl;
     private String instructions;
+    private String category;
 
     // Level progression
     private String level1Prompt;

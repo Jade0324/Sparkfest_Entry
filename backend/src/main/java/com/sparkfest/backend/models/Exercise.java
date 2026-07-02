@@ -30,6 +30,10 @@ public class Exercise {
     @Column(name = "phoneme_focus", length = 60)
     private String phonemeFocus;
 
+    // ── Category (e.g. "Animals", "Fruits", "Things") ───────
+    @Column(name = "category", length = 60)
+    private String category;
+
     @Builder.Default
     @Column(nullable = false)
     private Short difficulty = 1; // 1–5

@@ -16,6 +16,9 @@ public class CreateExerciseRequest {
 
     private String phonemeFocus;
 
+    // Category, e.g. "Animals", "Fruits", "Things" — optional
+    private String category;
+
     @NotNull
     @Min(1)
     @Max(5)

@@ -1,60 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ChevronLeft, Volume2, ChevronDown, ChevronUp,
-  Mic, Check, Lock, Star, Sparkles
+  Mic, Check, Lock, Star, Sparkles, MessageCircle,
 } from 'lucide-react';
 
 const API = 'http://localhost:8080/api/v1';
 
-// ── Priority config ────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────
+
 function getPriority(accuracy) {
   if (accuracy === null || accuracy === undefined)
-    return { label: 'Not Tried', color: 'bg-gray-100 text-gray-500', filter: 'none' };
+    return { label: 'Not Tried', color: 'bg-gray-100 text-gray-500' };
   if (accuracy < 50)
-    return { label: 'Needs Work', color: 'bg-red-100 text-red-600', filter: 'High Priority' };
+    return { label: 'Needs Work', color: 'bg-red-100 text-red-600' };
   if (accuracy < 80)
-    return { label: 'Improving', color: 'bg-orange-100 text-orange-600', filter: 'Improving' };
-  return { label: 'Mastered', color: 'bg-green-100 text-green-700', filter: 'Mastered' };
+    return { label: 'Improving',  color: 'bg-orange-100 text-orange-600' };
+  return   { label: 'Mastered',   color: 'bg-green-100 text-green-700' };
 }
 
-// ── Score ring color ───────────────────────────────────────
 function scoreColor(score) {
   if (score === null || score === undefined) return 'text-gray-400';
-  if (score < 50) return 'text-red-500';
-  if (score < 80) return 'text-orange-500';
+  if (score < 50)  return 'text-red-500';
+  if (score < 80)  return 'text-orange-500';
   return 'text-green-600';
 }
 
-// ── Mock level data — replace with exercise.level1_text etc. from backend ──
-function buildLevels(targetWord, latestAccuracy) {
-  const acc = latestAccuracy ?? 0;
-  const article = ['a','e','i','o','u'].includes(targetWord[0]?.toLowerCase()) ? 'an' : 'a';
-  return [
-    {
-      level: 1,
-      label: 'Word',
-      prompt: targetWord,
-      score: acc > 0 ? Math.min(100, Math.round(acc + 15)) : null,
-      unlocked: true,
-    },
-    {
-      level: 2,
-      label: 'Phrase',
-      prompt: `I see ${article} ${targetWord.toLowerCase()}`,
-      score: acc >= 60 ? Math.round(acc) : null,
-      unlocked: acc >= 60,
-    },
-    {
-      level: 3,
-      label: 'Sentence',
-      prompt: `The ${targetWord.toLowerCase()} is very beautiful`,
-      score: acc >= 85 ? Math.round(acc) : null,
-      unlocked: acc >= 85,
-    },
-  ];
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.75; utt.lang = 'en-US';
+  window.speechSynthesis.speak(utt);
 }
 
-// ── Mock AI feedback (replace with attempt.aiFeedback from backend) ──────────
+// ── Build 3 levels from word object (uses real backend text if available) ──
+function buildLevels(word) {
+  const { targetWord, level1Text, level2Text, level3Text, levelData } = word;
+  const article = ['a','e','i','o','u'].includes(targetWord[0]?.toLowerCase()) ? 'an' : 'a';
+
+  const targets = [
+    level1Text || targetWord,
+    level2Text || `I see ${article} ${targetWord.toLowerCase()}`,
+    level3Text || `The ${targetWord.toLowerCase()} is very beautiful`,
+  ];
+  const labels = ['Word', 'Phrase', 'Sentence'];
+
+  return targets.map((prompt, i) => {
+    const hist      = levelData?.[String(i)] ?? null;
+    const prevDone  = i === 0 ? true : !!(levelData?.[String(i - 1)]?.passed);
+    return {
+      level:      i + 1,
+      label:      labels[i],
+      prompt,
+      score:      hist?.accuracy    ?? null,
+      transcript: hist?.transcript  ?? null,
+      passed:     hist?.passed      ?? null,
+      unlocked:   i === 0 || prevDone,
+    };
+  });
+}
+
 function getMockFeedback(targetWord, accuracy) {
   if (accuracy === null || accuracy === undefined)
     return `Let's practice saying "${targetWord}" together! Tap the mic and give it a try. 🎙️`;
@@ -65,38 +70,28 @@ function getMockFeedback(targetWord, accuracy) {
   return `Let's keep practicing "${targetWord}" — every attempt makes you stronger! You've got this! 🤖`;
 }
 
-// ── TTS helper ─────────────────────────────────────────────
-function speak(text) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.rate = 0.75; utt.lang = 'en-US';
-  window.speechSynthesis.speak(utt);
-}
-
-// ════════════════════════════════════════════════════════════
-// WORD ROW — accordion card
-// ════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// WORD ROW — expandable accordion card
+// ══════════════════════════════════════════════════════════
 function WordRow({ word, onPractice }) {
   const [open, setOpen] = useState(false);
   const { label: priorityLabel, color: priorityColor } = getPriority(word.accuracy);
-  const levels = buildLevels(word.targetWord, word.accuracy);
+  const levels    = buildLevels(word);
   const aiFeedback = word.aiFeedback || getMockFeedback(word.targetWord, word.accuracy);
+  const isMastered = word.accuracy !== null && word.accuracy >= 85;
 
   return (
-    <div className={`border-b border-gray-50 last:border-0 transition-all ${open ? 'bg-indigo-50/30' : 'bg-white'}`}>
+    <div className={`border-b border-gray-50 last:border-0 transition-colors ${open ? 'bg-indigo-50/20' : 'bg-white'}`}>
 
       {/* ── Collapsed row ── */}
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
       >
-        {/* Priority badge */}
         <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full shrink-0 min-w-[76px] text-center ${priorityColor}`}>
           {priorityLabel}
         </span>
 
-        {/* Word info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="font-extrabold text-sm text-[#1A2C5B] truncate">{word.targetWord}</span>
@@ -104,97 +99,113 @@ function WordRow({ word, onPractice }) {
               <span className="text-[10px] text-gray-400 font-medium">· {word.nativeWord}</span>
             )}
           </div>
-          {word.transcript && word.transcript !== '—' && (
-            <p className="text-[11px] text-gray-400 truncate mt-0.5">
-              Said: <span className="italic">"{word.transcript}"</span>
+          {/* Show latest transcript in collapsed view */}
+          {word.transcript && (
+            <p className="text-[11px] text-gray-400 truncate mt-0.5 italic">
+              Last said: "{word.transcript}"
             </p>
           )}
         </div>
 
-        {/* Accuracy + chevron */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <span className={`font-extrabold text-sm ${scoreColor(word.accuracy)}`}>
             {word.accuracy !== null ? `${word.accuracy}%` : '—'}
           </span>
           {open
-            ? <ChevronUp size={16} className="text-gray-400" />
-            : <ChevronDown size={16} className="text-gray-400" />
+            ? <ChevronUp   size={15} className="text-gray-400" />
+            : <ChevronDown size={15} className="text-gray-400" />
           }
         </div>
       </button>
 
-      {/* ── Expanded accordion content ── */}
+      {/* ── Expanded content ── */}
       {open && (
         <div className="px-4 pb-4 space-y-3">
 
-          {/* Progressive Overload Levels */}
+          {/* Per-level history */}
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-            <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
+            <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                 Progressive Levels
               </p>
+              <p className="text-[9px] text-gray-300 font-medium">Tap 🔊 to hear</p>
             </div>
+
             {levels.map((lv) => (
               <div
                 key={lv.level}
-                className={`flex items-center gap-3 px-3 py-2.5 border-b border-gray-50 last:border-0 ${
-                  !lv.unlocked ? 'opacity-50' : ''
-                }`}
+                className={`px-3 py-3 border-b border-gray-50 last:border-0 ${!lv.unlocked ? 'opacity-40' : ''}`}
               >
-                {/* Level dot */}
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-extrabold ${
-                  lv.score !== null && lv.score >= 80
-                    ? 'bg-green-100 text-green-600'
-                    : lv.unlocked
-                    ? 'bg-indigo-100 text-[#6B5AE0]'
-                    : 'bg-gray-100 text-gray-400'
-                }`}>
-                  {lv.score !== null && lv.score >= 80
-                    ? <Check size={12} />
-                    : !lv.unlocked
-                    ? <Lock size={10} />
-                    : lv.level
-                  }
-                </div>
+                <div className="flex items-start gap-3">
+                  {/* Level indicator dot */}
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-extrabold ${
+                    lv.passed === true
+                      ? 'bg-green-100 text-green-600'
+                      : !lv.unlocked
+                      ? 'bg-gray-100 text-gray-400'
+                      : lv.score !== null
+                      ? 'bg-orange-100 text-orange-600'
+                      : 'bg-indigo-100 text-[#6B5AE0]'
+                  }`}>
+                    {lv.passed === true   ? <Check size={12} /> :
+                     !lv.unlocked         ? <Lock  size={10} /> :
+                     lv.level}
+                  </div>
 
-                {/* Level info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase">{lv.label}</p>
-                  <p className="text-sm font-semibold text-[#1A2C5B] truncate">"{lv.prompt}"</p>
-                </div>
+                  {/* Level text + transcript */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 mb-0.5">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase">
+                        L{lv.level} · {lv.label}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold text-[#1A2C5B] leading-snug">
+                      "{lv.prompt}"
+                    </p>
 
-                {/* Score or locked */}
-                <div className="shrink-0 flex items-center gap-1">
-                  {!lv.unlocked ? (
-                    <span className="text-[10px] text-gray-400 font-medium">Locked</span>
-                  ) : lv.score !== null ? (
-                    <span className={`text-sm font-extrabold ${scoreColor(lv.score)}`}>
-                      {lv.score}%
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => speak(lv.prompt)}
-                      className="w-7 h-7 rounded-full bg-indigo-50 flex items-center justify-center text-[#6B5AE0] active:scale-95"
-                    >
-                      <Volume2 size={13} />
-                    </button>
-                  )}
-                  {lv.unlocked && lv.score !== null && (
-                    <button
-                      onClick={() => speak(lv.prompt)}
-                      className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 active:scale-95 ml-1"
-                    >
-                      <Volume2 size={12} />
-                    </button>
-                  )}
+                    {/* What the child said */}
+                    {lv.transcript ? (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <MessageCircle size={10} className="text-gray-300 shrink-0" />
+                        <span className="text-[10px] text-gray-400">
+                          Said: <span className="italic font-medium text-gray-500">"{lv.transcript}"</span>
+                        </span>
+                      </div>
+                    ) : lv.unlocked && lv.score === null ? (
+                      <p className="text-[10px] text-indigo-400 mt-1 font-medium">
+                        Not attempted yet
+                      </p>
+                    ) : !lv.unlocked ? (
+                      <p className="text-[10px] text-gray-300 mt-1">
+                        Complete previous level to unlock
+                      </p>
+                    ) : null}
+                  </div>
+
+                  {/* Score + TTS button */}
+                  <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                    {lv.score !== null && (
+                      <span className={`text-sm font-extrabold ${scoreColor(lv.score)}`}>
+                        {lv.score}%
+                      </span>
+                    )}
+                    {lv.unlocked && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); speak(lv.prompt); }}
+                        className="w-7 h-7 rounded-full bg-gray-50 hover:bg-indigo-50 flex items-center justify-center text-gray-400 hover:text-[#6B5AE0] active:scale-95 transition-colors"
+                      >
+                        <Volume2 size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* AI Feedback Bubble */}
+          {/* AI Coach feedback bubble */}
           <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-3 border border-indigo-100 flex gap-2.5 items-start">
-            <div className="w-8 h-8 bg-[#6B5AE0] rounded-full flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+            <div className="w-8 h-8 bg-[#6B5AE0] rounded-full flex items-center justify-center shrink-0 shadow-sm">
               <Sparkles size={14} className="text-white" />
             </div>
             <div className="flex-1">
@@ -205,23 +216,20 @@ function WordRow({ word, onPractice }) {
             </div>
           </div>
 
-          {/* Practice Now button — only show if not fully mastered */}
-          {(word.accuracy === null || word.accuracy < 85) && (
+          {/* Practice Now / Mastered */}
+          {isMastered ? (
+            <div className="w-full flex items-center justify-center gap-2 py-3 bg-green-50 border border-green-200 rounded-2xl">
+              <Star size={15} className="text-green-600 fill-green-600" />
+              <span className="font-extrabold text-sm text-green-700">Word Mastered! 🏆</span>
+            </div>
+          ) : (
             <button
               onClick={() => onPractice && onPractice(word.exerciseId, word.targetWord)}
               className="w-full flex items-center justify-center gap-2 py-3 bg-[#6B5AE0] text-white rounded-2xl font-extrabold text-sm shadow-md shadow-indigo-200 active:scale-95 transition-transform"
             >
-              <Mic size={16} />
+              <Mic size={15} />
               Practice Now
             </button>
-          )}
-
-          {/* Mastered state */}
-          {word.accuracy !== null && word.accuracy >= 85 && (
-            <div className="w-full flex items-center justify-center gap-2 py-3 bg-green-50 border border-green-200 rounded-2xl">
-              <Star size={16} className="text-green-600 fill-green-600" />
-              <span className="font-extrabold text-sm text-green-700">Word Mastered!</span>
-            </div>
           )}
         </div>
       )}
@@ -229,18 +237,49 @@ function WordRow({ word, onPractice }) {
   );
 }
 
-// ════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // MAIN DICTIONARY COMPONENT
-// ════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 export default function Dictionary({ onBack, onPractice }) {
-  const [words, setWords] = useState([]);
+  const [words,   setWords]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('All Words');
-  const [stats, setStats] = useState({ total: 0, improving: 0, mastered: 0, accuracy: 0 });
+  const [filter,  setFilter]  = useState('All Words');
+  const [stats,   setStats]   = useState({ total: 0, improving: 0, mastered: 0, accuracy: 0 });
 
+  // ── Drag-to-scroll refs ────────────────────────────────
+  const pillsRef    = useRef(null);
+  const isDragging  = useRef(false);
+  const dragStartX  = useRef(0);
+  const scrollStart = useRef(0);
+
+  const onMouseDown  = (e) => {
+    isDragging.current  = true;
+    dragStartX.current  = e.pageX - pillsRef.current.offsetLeft;
+    scrollStart.current = pillsRef.current.scrollLeft;
+    pillsRef.current.style.cursor = 'grabbing';
+  };
+  const onMouseLeave = () => {
+    isDragging.current = false;
+    if (pillsRef.current) pillsRef.current.style.cursor = 'grab';
+  };
+  const onMouseUp    = () => {
+    isDragging.current = false;
+    if (pillsRef.current) pillsRef.current.style.cursor = 'grab';
+  };
+  const onMouseMove  = (e) => {
+    if (!isDragging.current) return;
+    e.preventDefault();
+    const x    = e.pageX - pillsRef.current.offsetLeft;
+    const walk = (x - dragStartX.current) * 1.5;
+    pillsRef.current.scrollLeft = scrollStart.current - walk;
+  };
+
+  // ── Fetch data ─────────────────────────────────────────
   useEffect(() => {
     (async () => {
-      const sessionId = localStorage.getItem('lastSessionId');
+      const sessionId    = localStorage.getItem('lastSessionId');
+      const levelHistory = JSON.parse(localStorage.getItem('levelHistory') || '{}');
+
       if (!sessionId) { setLoading(false); return; }
 
       try {
@@ -248,7 +287,7 @@ export default function Dictionary({ onBack, onPractice }) {
         if (!res.ok) throw new Error();
         const attempts = await res.json();
 
-        // Group by exerciseId — keep latest attempt per exercise
+        // Keep latest attempt per exercise
         const byExercise = {};
         for (const a of attempts) {
           const key = a.exerciseId;
@@ -257,15 +296,41 @@ export default function Dictionary({ onBack, onPractice }) {
           }
         }
 
-        const wordList = Object.values(byExercise).map(a => ({
-          exerciseId:  a.exerciseId,
-          targetWord:  a.targetWord,
-          nativeWord:  a.nativeWord,
-          transcript:  a.transcript || null,
-          accuracy:    a.accuracyScore !== null ? Math.round(Number(a.accuracyScore)) : null,
-          passed:      a.passed,
-          aiFeedback:  a.aiFeedback || null,
-        }));
+        const wordList = Object.values(byExercise).map(a => {
+          const hist = levelHistory[a.exerciseId] || null;
+
+          // Overall accuracy: use backend score, or derive from level data
+          let accuracy = a.accuracyScore !== null
+            ? Math.round(Number(a.accuracyScore))
+            : null;
+
+          // If we have level history, compute overall as average of attempted levels
+          if (hist?.levels) {
+            const attempted = Object.values(hist.levels).filter(l => l.accuracy !== undefined);
+            if (attempted.length > 0) {
+              accuracy = Math.round(
+                attempted.reduce((s, l) => s + l.accuracy, 0) / attempted.length
+              );
+            }
+          }
+
+          return {
+            exerciseId: a.exerciseId,
+            targetWord: a.targetWord,
+            nativeWord: a.nativeWord,
+            // Latest transcript from backend attempt
+            transcript: a.transcript || null,
+            accuracy,
+            passed:     a.passed,
+            aiFeedback: a.aiFeedback || null,
+            // Level-specific text from localStorage (set by LearningSession on complete)
+            level1Text: hist?.level1Text || null,
+            level2Text: hist?.level2Text || null,
+            level3Text: hist?.level3Text || null,
+            // Per-level scores + transcripts
+            levelData:  hist?.levels    || null,
+          };
+        });
 
         const avg = wordList.length
           ? Math.round(wordList.reduce((s, w) => s + (w.accuracy ?? 0), 0) / wordList.length)
@@ -279,7 +344,7 @@ export default function Dictionary({ onBack, onPractice }) {
           accuracy:  avg,
         });
       } catch {
-        // empty state handled below
+        // empty state shown below
       } finally {
         setLoading(false);
       }
@@ -317,17 +382,18 @@ export default function Dictionary({ onBack, onPractice }) {
         <div className="bg-white rounded-3xl p-4 flex gap-3 items-start shadow-sm mb-4 border border-gray-100">
           <span className="text-2xl mt-0.5">👦🏻</span>
           <p className="text-xs text-gray-600 leading-relaxed">
-            These words are curated from Juan's recent sessions. Tap any word to see
-            all 3 practice levels and your <span className="text-[#6B5AE0] font-semibold">AI coach feedback</span>!
+            These words are from Juan's recent sessions. Tap any row to see all{' '}
+            <span className="text-[#6B5AE0] font-semibold">3 progressive levels</span>,
+            what was said, and AI coach feedback!
           </p>
         </div>
 
         {/* ── Stats row ── */}
         <div className="grid grid-cols-4 gap-2 mb-4">
           {[
-            { val: stats.total,     label: 'WORDS' },
+            { val: stats.total,     label: 'WORDS'     },
             { val: stats.improving, label: 'IMPROVING' },
-            { val: stats.mastered,  label: 'MASTERED' },
+            { val: stats.mastered,  label: 'MASTERED'  },
             { val: `${stats.accuracy}%`, label: 'ACCURACY' },
           ].map((s, i) => (
             <div key={i} className="bg-white rounded-2xl p-3 text-center shadow-sm border border-gray-50">
@@ -337,10 +403,15 @@ export default function Dictionary({ onBack, onPractice }) {
           ))}
         </div>
 
-        {/* ── Filter pills — scrollbar hidden ── */}
+        {/* ── Filter pills — drag-to-scroll on desktop ── */}
         <div
-          className="flex gap-2 overflow-x-auto pb-1 mb-4"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          ref={pillsRef}
+          className="flex gap-2 overflow-x-auto pb-1 mb-4 select-none"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', cursor: 'grab' }}
+          onMouseDown={onMouseDown}
+          onMouseLeave={onMouseLeave}
+          onMouseUp={onMouseUp}
+          onMouseMove={onMouseMove}
         >
           {FILTERS.map(f => (
             <button
@@ -357,7 +428,7 @@ export default function Dictionary({ onBack, onPractice }) {
           ))}
         </div>
 
-        {/* ── Word accordion list ── */}
+        {/* ── Accordion word list ── */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <h3 className="font-extrabold text-[#1A2C5B] text-sm">Word Breakdown</h3>
@@ -369,20 +440,18 @@ export default function Dictionary({ onBack, onPractice }) {
               <div className="text-3xl animate-bounce">🤖</div>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 gap-2">
+            <div className="flex flex-col items-center justify-center py-10 gap-2 px-6">
               <span className="text-4xl">📭</span>
-              <p className="text-sm text-gray-400 font-medium text-center px-6">
+              <p className="text-sm text-gray-400 font-medium text-center">
                 {words.length === 0
                   ? 'Complete a learning session to see your words here.'
                   : 'No words in this category yet.'}
               </p>
             </div>
           ) : (
-            <div>
-              {filtered.map((w, i) => (
-                <WordRow key={i} word={w} onPractice={onPractice} />
-              ))}
-            </div>
+            filtered.map((w, i) => (
+              <WordRow key={`${w.exerciseId}-${i}`} word={w} onPractice={onPractice} />
+            ))
           )}
         </div>
 

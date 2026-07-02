@@ -1,12 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Bell, Mic, BookOpen, Target, Star, Flame, Check, Lock } from 'lucide-react';
 
-const API = 'http://localhost:8080/api/v1';
-const CHILD_ID = 1; // hardcoded for hackathon — swap when auth is ready
-
 export default function Home({ onStartSession, onOpenProgress, onOpenDictionary, onOpenAccount }) {
-  const [starting, setStarting] = useState(false);
-  const [startError, setStartError] = useState('');
 
   // Mock data — replace with real DashboardController once built
   const summary = {
@@ -19,43 +14,6 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
       { title: 'Animals', date: 'Yesterday', score: '70%', icon: '🐱' },
     ],
     child: { name: 'Juan Dela Cruz', age: 7, grade: 'Grade 2', tier: 'Tier 2' }
-  };
-
-  const handleStartSession = async () => {
-    setStarting(true);
-    setStartError('');
-    try {
-      // 1. Fetch exercises (up to 5, any difficulty)
-      const exRes = await fetch(`${API}/exercises?page=0&size=5`);
-      if (!exRes.ok) throw new Error('Could not fetch exercises from backend.');
-      const exData = await exRes.json();
-
-      if (!exData.content || exData.content.length === 0) {
-        setStartError('No exercises found. Seed exercises via POST /api/v1/exercises first.');
-        return;
-      }
-
-      const exerciseIds = exData.content.map(e => e.id);
-
-      // 2. Create a new session
-      const sessionRes = await fetch(`${API}/sessions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ childId: CHILD_ID, exerciseIds }),
-      });
-      if (!sessionRes.ok) throw new Error('Could not create session.');
-      const session = await sessionRes.json();
-
-      // 3. Save sessionId for Dictionary to read later
-      localStorage.setItem('lastSessionId', session.id);
-
-      // 4. Navigate to learning session
-      onStartSession(session.id);
-    } catch (err) {
-      setStartError(err.message || 'Failed to start. Is the backend running on port 8080?');
-    } finally {
-      setStarting(false);
-    }
   };
 
   return (
@@ -164,27 +122,18 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
             </div>
           ))}
         </div>
-
-        {startError && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-2xl">
-            <p className="text-red-500 text-xs text-center font-medium">{startError}</p>
-          </div>
-        )}
       </div>
 
-      {/* FAB — Start Session */}
+      {/* FAB — Start Session → goes to Topic Picker */}
       <div className="absolute bottom-20 left-0 w-full px-5 pointer-events-none">
         <button
-          onClick={handleStartSession}
-          disabled={starting}
-          className="w-full bg-[#6B5AE0] hover:bg-[#5A48D0] pointer-events-auto text-white rounded-3xl py-4 px-4 flex items-center justify-between shadow-lg shadow-indigo-200 transition-transform active:scale-95 disabled:opacity-70"
+          onClick={onStartSession}
+          className="w-full bg-[#6B5AE0] hover:bg-[#5A48D0] pointer-events-auto text-white rounded-3xl py-4 px-4 flex items-center justify-between shadow-lg shadow-indigo-200 transition-transform active:scale-95"
         >
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <Mic size={18} className="text-white" />
           </div>
-          <span className="font-semibold text-base">
-            {starting ? 'Starting session...' : 'Start Learning Session'}
-          </span>
+          <span className="font-semibold text-base">Start Learning Session</span>
           <svg className="w-5 h-5 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
