@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Star } from 'lucide-react';
 
-const API      = '[https://sparkfest-entry-1.onrender.com](https://sparkfest-entry-1.onrender.com)/api/v1';
+const API      = 'https://sparkfest-entry-1.onrender.com/api/v1';
 const CHILD_ID = 1;
 
 const EMOJI_MAP = {

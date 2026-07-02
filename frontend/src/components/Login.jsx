@@ -13,7 +13,7 @@ export default function Login({ onLogin }) {
 
     // Try backend but never block navigation — demo mode always proceeds
     try {
-      await fetch('[https://sparkfest-entry-1.onrender.com](https://sparkfest-entry-1.onrender.com)/api/auth/login', {
+      await fetch('https://sparkfest-entry-1.onrender.com/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ username: username.trim(), password }).toString(),

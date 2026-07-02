@@ -4,8 +4,7 @@ import {
   Mic, Check, Lock, Star, Sparkles
 } from 'lucide-react';
 
-const API = '[https://sparkfest-entry-1.onrender.com](https://sparkfest-entry-1.onrender.com)/api/v1';
-
+const API = 'https://sparkfest-entry-1.onrender.com/api/v1/children/1/dictionary';
 // ── Priority config ────────────────────────────────────────
 function getPriority(accuracy) {
   if (accuracy === null || accuracy === undefined)

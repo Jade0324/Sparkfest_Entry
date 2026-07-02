@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Sparkles } from 'lucide-react';
 
-const API = '[https://sparkfest-entry-1.onrender.com](https://sparkfest-entry-1.onrender.com)/api/v1';
+const API = 'https://sparkfest-entry-1.onrender.com/api/v1';
 
 const CATEGORY_EMOJI = {
   'Animals': '🐾',
