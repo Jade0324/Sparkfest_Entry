@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, Volume2, ArrowRight, Mic } from 'lucide-react';
 import useLORO from '../hooks/useLORO';
 
-const API = 'http://localhost:8080/api/v1';
+const API = 'http://[https://sparkfest-entry-1.onrender.com](https://sparkfest-entry-1.onrender.com)/api/v1';
 
 // ═══════════════════════════════════════════════════════════
 // LORO SPEECH LINES
