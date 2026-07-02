@@ -45,6 +45,13 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+<!-- Postgres for Render (prod) -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- MySQL kept for local dev -->
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
