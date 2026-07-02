@@ -23,12 +23,13 @@ export default function GetStarted({ onNext }) {
           </svg>
         </div>
 
-        {/* App name */}
-        <h1 className="text-4xl font-extrabold tracking-tight mb-2 text-center">
-          <span className="text-white">Talino</span>
-          <span className="text-[#F8A03E]">Tini</span>
-          <span className="text-[#F495A5]">g</span>
+            {/* App name */}
+        <h1 className="text-4xl font-extrabold tracking-tight mb-1 text-center">
+            <span className="text-white">LORO</span>
         </h1>
+        <p className="text-[#F8A03E] text-sm font-bold tracking-[0.15em] uppercase text-center mb-4">
+          Speech Progress Buddy
+        </p>
         <p className="text-indigo-200 text-sm text-center mb-10 leading-relaxed px-4">
           A safe, friendly space for children to grow their voice — one word at a time.
         </p>

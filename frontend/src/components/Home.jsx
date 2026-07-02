@@ -27,10 +27,10 @@ export default function Home({ onStartSession, onOpenProgress, onOpenDictionary,
             <circle cx="62" cy="45" r="5" fill="currentColor" stroke="none"/>
             <path d="M38 60 Q50 72 62 60" />
           </svg>
-          <h1 className="text-lg font-extrabold tracking-tight">
-            <span className="text-[#1A2C5B]">Talino</span>
-            <span className="text-[#F8A03E]">Tini</span>
-            <span className="text-[#F495A5]">g</span>
+        <h1 className="text-lg font-extrabold tracking-tight">
+            <span className="text-[#1A2C5B]">L</span>
+            <span className="text-[#F8A03E]">OR</span>
+            <span className="text-[#F495A5]">O</span>
           </h1>
         </div>
         <Bell className="w-6 h-6 text-gray-600" />
