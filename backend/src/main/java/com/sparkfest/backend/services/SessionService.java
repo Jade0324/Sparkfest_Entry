@@ -140,21 +140,31 @@ public class SessionService {
                                 .build();
         }
 
-        // ── KEY FIX: uses constructor directly instead of .builder()
-        // because @Builder + @NoArgsConstructor conflict on SessionExerciseResponse
         private SessionExerciseResponse toSessionExerciseResponse(SessionExercise sessionExercise) {
+                Exercise exercise = sessionExercise.getExercise();
+
                 ExerciseResponse exerciseResponse = ExerciseResponse.builder()
-                                .id(sessionExercise.getExercise().getId())
-                                .targetWord(sessionExercise.getExercise().getTargetWord())
-                                .phonemeFocus(sessionExercise.getExercise().getPhonemeFocus())
-                                .difficulty(sessionExercise.getExercise().getDifficulty())
-                                .mediaUrl(sessionExercise.getExercise().getMediaUrl())
-                                .instructions(sessionExercise.getExercise().getInstructions())
+                                .id(exercise.getId())
+                                .targetWord(exercise.getTargetWord())
+                                .phonemeFocus(exercise.getPhonemeFocus())
+                                .difficulty(exercise.getDifficulty())
+                                .mediaUrl(exercise.getMediaUrl())
+                                .instructions(exercise.getInstructions())
+                                .level1Prompt(exercise.getLevel1Prompt())
+                                .level1Text(exercise.getLevel1Text())
+                                .level1ImageUrl(exercise.getLevel1ImageUrl())
+                                .level2Prompt(exercise.getLevel2Prompt())
+                                .level2Text(exercise.getLevel2Text())
+                                .level2ImageUrl(exercise.getLevel2ImageUrl())
+                                .level3Prompt(exercise.getLevel3Prompt())
+                                .level3Text(exercise.getLevel3Text())
+                                .level3ImageUrl(exercise.getLevel3ImageUrl())
                                 .build();
 
-                return new SessionExerciseResponse(
-                                sessionExercise.getSequenceOrder(),
-                                exerciseResponse);
+                return SessionExerciseResponse.builder()
+                                .sequenceOrder(sessionExercise.getSequenceOrder())
+                                .exercise(exerciseResponse)
+                                .build();
         }
 
         private AttemptResponse toAttemptResponse(Attempt attempt) {

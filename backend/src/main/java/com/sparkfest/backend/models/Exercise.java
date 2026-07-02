@@ -22,23 +22,21 @@ public class Exercise {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ── Core identity ───────────────────────────────────────
+
     @Column(name = "target_word", nullable = false, length = 120)
     private String targetWord;
-
-    // Tagalog equivalent shown on the bilingual learning card
-    // e.g. targetWord = "Fish", nativeWord = "Isda"
-    @Column(name = "native_word", length = 120)
-    private String nativeWord;
 
     @Column(name = "phoneme_focus", length = 60)
     private String phonemeFocus;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Short difficulty = 1;
+    // ── Category (e.g. "Animals", "Fruits", "Things") ───────
+    @Column(name = "category", length = 60)
+    private String category;
 
-    @Column(name = "media_url", length = 512)
-    private String mediaUrl;
+    @Builder.Default
+    @Column(nullable = false)
+    private Short difficulty = 1; // 1–5
 
     @Column(columnDefinition = "TEXT")
     private String instructions;
@@ -47,10 +45,46 @@ public class Exercise {
     @Builder.Default
     private Boolean isActive = true;
 
+    // ── Level 1 — Single Word ───────────────────────────────
+    @Column(name = "level1_prompt", length = 255)
+    private String level1Prompt;
+
+    @Column(name = "level1_text", length = 120)
+    private String level1Text;
+
+    @Column(name = "level1_image_url", length = 512)
+    private String level1ImageUrl;
+
+    // ── Level 2 — Phrase ────────────────────────────────────
+    @Column(name = "level2_prompt", length = 255)
+    private String level2Prompt;
+
+    @Column(name = "level2_text", length = 255)
+    private String level2Text;
+
+    @Column(name = "level2_image_url", length = 512)
+    private String level2ImageUrl;
+
+    // ── Level 3 — Full Sentence ─────────────────────────────
+    @Column(name = "level3_prompt", length = 255)
+    private String level3Prompt;
+
+    @Column(name = "level3_text", length = 255)
+    private String level3Text;
+
+    @Column(name = "level3_image_url", length = 512)
+    private String level3ImageUrl;
+
+    // ── Legacy single mediaUrl (kept for backward compat) ───
+    @Column(name = "media_url", length = 512)
+    private String mediaUrl;
+
+    // ── Relationships ───────────────────────────────────────
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<SessionExercise> sessionExercises = new ArrayList<>();
 
+    // ── Audit ───────────────────────────────────────────────
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -58,4 +92,6 @@ public class Exercise {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    private String nativeWord;
 }

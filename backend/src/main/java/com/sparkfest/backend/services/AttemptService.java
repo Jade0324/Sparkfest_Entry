@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,6 +28,17 @@ public class AttemptService {
         private final SessionRepository sessionRepository;
         private final ExerciseRepository exerciseRepository;
 
+        // ── GET all attempts for a session (used by Dictionary) ───────────────────
+        @Transactional(readOnly = true)
+        public List<AttemptResponse> getAttemptsBySession(Long sessionId) {
+                return attemptRepository
+                                .findBySessionIdOrderByRecordedAtAsc(sessionId)
+                                .stream()
+                                .map(this::toAttemptResponse)
+                                .collect(Collectors.toList());
+        }
+
+        // ── POST submit one attempt ────────────────────────────────────────────────
         @Transactional
         public AttemptResponse submitAttempt(Long sessionId, SubmitAttemptRequest request) {
                 Session session = sessionRepository.findById(sessionId)
@@ -57,8 +70,10 @@ public class AttemptService {
                 log.debug("Saved attempt #{} session={} exercise='{}' accuracy={} passed={}",
                                 nextNumber, sessionId, exercise.getTargetWord(), accuracy, passed);
 
-                return toResponse(attempt);
+                return toAttemptResponse(attempt);
         }
+
+        // ── Helpers ───────────────────────────────────────────────────────────────
 
         private BigDecimal resolveAccuracy(SubmitAttemptRequest request, String targetWord) {
                 if (request.getAccuracyScore() != null)
@@ -69,7 +84,6 @@ public class AttemptService {
                 return null;
         }
 
-        // Fallback character-level scorer — replace with phonetic scorer later
         private BigDecimal computeSimpleAccuracy(String transcript, String target) {
                 String t = transcript.toLowerCase();
                 String w = target.toLowerCase();
@@ -85,7 +99,7 @@ public class AttemptService {
                                 .setScale(2, RoundingMode.HALF_UP);
         }
 
-        public AttemptResponse toResponse(Attempt attempt) {
+        public AttemptResponse toAttemptResponse(Attempt attempt) {
                 return AttemptResponse.builder()
                                 .id(attempt.getId())
                                 .sessionId(attempt.getSession().getId())
